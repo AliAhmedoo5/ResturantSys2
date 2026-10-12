@@ -12,7 +12,8 @@ class CashRounding {
 
   factory CashRounding.forFinalBalance(int exactPaisa) {
     if (exactPaisa < 0) {
-      throw ArgumentError.value(exactPaisa, 'exactPaisa', 'Must be nonnegative');
+      throw ArgumentError.value(
+          exactPaisa, 'exactPaisa', 'Must be nonnegative');
     }
     final maxPaisa = BigInt.parse('9223372036854775807');
     final exact = BigInt.from(exactPaisa);

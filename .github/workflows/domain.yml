@@ -26,7 +26,7 @@ jobs:
           persist-credentials: false
       - uses: dart-lang/setup-dart@v1
         with:
-          sdk: stable
+          sdk: '3.13.5'
       - name: Resolve package on the hosted runner
         run: dart pub get
       - name: Check formatting
