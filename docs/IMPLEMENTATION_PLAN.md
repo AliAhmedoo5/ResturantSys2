@@ -28,7 +28,7 @@ Each numbered chunk is a separate reviewable change. Feature chunks include pers
 
 ## Progress
 
-- Chunk 01: source prepared; awaiting repository and first Actions run.
+- Chunk 01: implemented; formatting, analysis and cash-rounding regression suite passed on GitHub-hosted Windows, commit `6780c0d`, [Actions evidence](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38296356193). Includes all 100 fractional-rupee residues, split cash balance examples, negative-input rejection and the maximum signed integer boundary.
 - Chunks 02–21: not implemented.
 - No local dependency installation, test, formatter, app execution or build has been performed.
 

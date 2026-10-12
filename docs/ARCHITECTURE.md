@@ -14,6 +14,6 @@ All money is signed 64-bit integer paisa at storage boundaries. Use BigInt inter
 
 ## Execution and reproducibility
 
-All project execution takes place in GitHub Actions on hosted Windows runners. The first domain workflow uses Dart stable as an initial bootstrap; before the Flutter shell is accepted, pin the exact Flutter/Dart SDK and commit dependency lockfiles produced by Actions. No deployment/signing/email credentials belong in source control. Publish development artifacts only after all required checks succeed. A domain-only check is not a Windows application build.
+All project execution takes place in GitHub Actions on hosted Windows runners. The domain workflow pins Dart 3.13.5, identified and validated on the runner. Before the Flutter shell is accepted, pin its compatible Flutter/Dart SDK and commit dependency lockfiles produced by Actions. The initial domain package has no external dependencies. No deployment/signing/email credentials belong in source control. Publish development artifacts only after all required checks succeed. A domain-only check is not a Windows application build.
 
 Workflow syntax follows the official [Dart setup action](https://github.com/dart-lang/setup-dart) and [checkout action](https://github.com/actions/checkout) documentation.

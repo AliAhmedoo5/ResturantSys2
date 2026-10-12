@@ -4,7 +4,7 @@ Offline Windows restaurant application based on `Restaurant_POS_COMPLETE_Master_
 
 ## Current status
 
-Chunk 01 is prepared locally: delivery plan, contributor rules, initial pure Dart cash-rounding policy and its regression tests, plus GitHub Actions validation. It is **not CI-verified** and is not yet a usable POS application. A GitHub repository must be supplied before remote validation can run.
+Chunk 01 is implemented and CI-verified: delivery plan, contributor rules, initial pure Dart cash-rounding policy and its regression tests, plus GitHub Actions validation. [Windows checks passed](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38296356193) for commit `6780c0d`. This is not yet a usable POS application.
 
 The domain package in `packages/pos_domain` will be consumed by the Flutter Windows application. The UI, database, authentication and transactional services are subsequent chunks.
 
