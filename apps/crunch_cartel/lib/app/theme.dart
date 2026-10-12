@@ -33,25 +33,43 @@ ThemeData cartelTheme() {
   return base.copyWith(
     textTheme: base.textTheme.copyWith(
       headlineLarge: const TextStyle(
+        fontFamily: 'Segoe UI',
         fontSize: 40,
         height: 1.08,
         fontWeight: FontWeight.w800,
         letterSpacing: -1.4,
       ),
       headlineMedium: const TextStyle(
+        fontFamily: 'Segoe UI',
         fontSize: 28,
         height: 1.15,
         fontWeight: FontWeight.w700,
       ),
-      titleLarge: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
-      bodyLarge: const TextStyle(fontSize: 16, height: 1.5),
-      bodyMedium: const TextStyle(fontSize: 14, height: 1.5),
+      titleLarge: const TextStyle(
+        fontFamily: 'Segoe UI',
+        fontSize: 21,
+        fontWeight: FontWeight.w700,
+      ),
+      bodyLarge: const TextStyle(
+        fontFamily: 'Segoe UI',
+        fontSize: 16,
+        height: 1.5,
+      ),
+      bodyMedium: const TextStyle(
+        fontFamily: 'Segoe UI',
+        fontSize: 14,
+        height: 1.5,
+      ),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size(48, 48),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        textStyle: const TextStyle(
+          fontFamily: 'Segoe UI',
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     ),

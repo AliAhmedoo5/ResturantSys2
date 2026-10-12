@@ -295,14 +295,16 @@ class CounterPreviewPage extends StatelessWidget {
                         children: [
                           const Row(
                             children: [
-                              Text(
-                                'Current order',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
+                              Expanded(
+                                child: Text(
+                                  'Current order',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                              Spacer(),
+                              SizedBox(width: 8),
                               Icon(
                                 Icons.receipt_long_outlined,
                                 color: CartelColors.muted,
@@ -314,20 +316,9 @@ class CounterPreviewPage extends StatelessWidget {
                           const Divider(),
                           const Expanded(
                             child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.shopping_bag_outlined,
-                                    size: 32,
-                                    color: CartelColors.muted,
-                                  ),
-                                  SizedBox(height: 12),
-                                  Text(
-                                    'No order started',
-                                    style: TextStyle(color: CartelColors.muted),
-                                  ),
-                                ],
+                              child: Text(
+                                'No order started',
+                                style: TextStyle(color: CartelColors.muted),
                               ),
                             ),
                           ),
