@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:crunch_cartel/app/app.dart';
@@ -22,7 +21,9 @@ void main() {
       await loader.load();
     }
   });
-  testWidgets('navigation is preview-only and manager has no checkout', (tester) async {
+  testWidgets('navigation is preview-only and manager has no checkout', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1366, 768);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -30,7 +31,12 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: CrunchCartelApp()));
     await tester.pumpAndSettle();
     expect(find.text('CRUNCH\nCARTEL'), findsNWidgets(2));
-    expect(Theme.of(tester.element(find.text('Your counter. Under control.'))).colorScheme.primary, CartelColors.yellow);
+    expect(
+      Theme.of(
+        tester.element(find.text('Your counter. Under control.')),
+      ).colorScheme.primary,
+      CartelColors.yellow,
+    );
     await tester.ensureVisible(find.text('Preview management'));
     await tester.tap(find.text('Preview management'));
     await tester.pumpAndSettle();
@@ -42,7 +48,9 @@ void main() {
     await tester.ensureVisible(find.text('Preview counter'));
     await tester.tap(find.text('Preview counter'));
     await tester.pumpAndSettle();
-    final checkout = tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Checkout unavailable'));
+    final checkout = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Checkout unavailable'),
+    );
     expect(checkout.onPressed, isNull);
     await tester.sendKeyEvent(LogicalKeyboardKey.f1);
     await tester.pumpAndSettle();
@@ -54,7 +62,9 @@ void main() {
   });
 
   for (final dpi in [1.0, 1.25, 1.5]) {
-    testWidgets('all preview routes fit 1366x768 at $dpi scale', (tester) async {
+    testWidgets('all preview routes fit 1366x768 at $dpi scale', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1366, 768);
       tester.view.devicePixelRatio = dpi;
       addTearDown(tester.view.resetPhysicalSize);
@@ -62,19 +72,43 @@ void main() {
       final container = ProviderContainer();
       addTearDown(container.dispose);
       final boundaryKey = GlobalKey();
-      await tester.pumpWidget(UncontrolledProviderScope(container: container, child: RepaintBoundary(key: boundaryKey, child: const CrunchCartelApp())));
-      for (final route in ['/', '/preview/counter', '/preview/manager', '/setup']) {
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: RepaintBoundary(
+            key: boundaryKey,
+            child: const CrunchCartelApp(),
+          ),
+        ),
+      );
+      for (final route in [
+        '/',
+        '/preview/counter',
+        '/preview/manager',
+        '/setup',
+      ]) {
         container.read(routerProvider).go(route);
         await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull, reason: 'Layout overflow at $route / $dpi');
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: 'Layout overflow at $route / $dpi',
+        );
         if (Platform.environment['CI'] == 'true') {
-          final boundary = boundaryKey.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+          final boundary =
+              boundaryKey.currentContext!.findRenderObject()!
+                  as RenderRepaintBoundary;
           await tester.runAsync(() async {
             final image = await boundary.toImage(pixelRatio: dpi);
-            final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+            final bytes = await image.toByteData(
+              format: ui.ImageByteFormat.png,
+            );
             final name = route == '/' ? 'welcome' : route.replaceAll('/', '-');
-            final folder = Directory('build/preview-screenshots')..createSync(recursive: true);
-            await File('${folder.path}/$name-$dpi.png').writeAsBytes(bytes!.buffer.asUint8List());
+            final folder = Directory('build/preview-screenshots')
+              ..createSync(recursive: true);
+            await File(
+              '${folder.path}/$name-$dpi.png',
+            ).writeAsBytes(bytes!.buffer.asUint8List());
             image.dispose();
           });
         }

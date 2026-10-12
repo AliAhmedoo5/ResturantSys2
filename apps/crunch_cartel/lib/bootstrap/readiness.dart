@@ -8,4 +8,6 @@ class PreviewReadiness {
   String get message => 'Setup and billing are not enabled in this build.';
 }
 
-final readinessProvider = Provider<PreviewReadiness>((ref) => const PreviewReadiness());
+final readinessProvider = Provider<PreviewReadiness>(
+  (ref) => const PreviewReadiness(),
+);

@@ -11,23 +11,40 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     routes: [
       ShellRoute(
-        builder: (context, state, child) => CartelShell(path: state.uri.path, child: child),
+        builder: (context, state, child) =>
+            CartelShell(path: state.uri.path, child: child),
         routes: [
           GoRoute(path: '/', builder: (context, state) => const WelcomePage()),
-          GoRoute(path: '/preview/counter', builder: (context, state) => const CounterPreviewPage()),
-          GoRoute(path: '/preview/manager', builder: (context, state) => const ManagerPreviewPage()),
-          GoRoute(path: '/setup', builder: (context, state) => const SetupPreviewPage()),
+          GoRoute(
+            path: '/preview/counter',
+            builder: (context, state) => const CounterPreviewPage(),
+          ),
+          GoRoute(
+            path: '/preview/manager',
+            builder: (context, state) => const ManagerPreviewPage(),
+          ),
+          GoRoute(
+            path: '/setup',
+            builder: (context, state) => const SetupPreviewPage(),
+          ),
         ],
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(body: Center(child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text('This page is not available.'),
-        const SizedBox(height: 16),
-        FilledButton(onPressed: () => context.go('/'), child: const Text('Back to welcome')),
-      ],
-    ))),
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('This page is not available.'),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () => context.go('/'),
+              child: const Text('Back to welcome'),
+            ),
+          ],
+        ),
+      ),
+    ),
   );
   ref.onDispose(router.dispose);
   return router;

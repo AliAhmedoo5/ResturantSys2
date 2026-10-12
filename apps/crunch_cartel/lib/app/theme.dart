@@ -32,26 +32,45 @@ ThemeData cartelTheme() {
   );
   return base.copyWith(
     textTheme: base.textTheme.copyWith(
-      headlineLarge: const TextStyle(fontSize: 40, height: 1.08, fontWeight: FontWeight.w800, letterSpacing: -1.4),
-      headlineMedium: const TextStyle(fontSize: 28, height: 1.15, fontWeight: FontWeight.w700),
+      headlineLarge: const TextStyle(
+        fontSize: 40,
+        height: 1.08,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1.4,
+      ),
+      headlineMedium: const TextStyle(
+        fontSize: 28,
+        height: 1.15,
+        fontWeight: FontWeight.w700,
+      ),
       titleLarge: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700),
       bodyLarge: const TextStyle(fontSize: 16, height: 1.5),
       bodyMedium: const TextStyle(fontSize: 14, height: 1.5),
     ),
-    filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(
-      minimumSize: const Size(48, 48),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-    )),
-    outlinedButtonTheme: OutlinedButtonThemeData(style: OutlinedButton.styleFrom(
-      foregroundColor: CartelColors.white,
-      minimumSize: const Size(48, 48),
-      side: const BorderSide(color: CartelColors.line),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-    )),
-    dividerTheme: const DividerThemeData(color: CartelColors.line, thickness: 1, space: 1),
-    tooltipTheme: const TooltipThemeData(waitDuration: Duration(milliseconds: 400)),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: CartelColors.white,
+        minimumSize: const Size(48, 48),
+        side: const BorderSide(color: CartelColors.line),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+    dividerTheme: const DividerThemeData(
+      color: CartelColors.line,
+      thickness: 1,
+      space: 1,
+    ),
+    tooltipTheme: const TooltipThemeData(
+      waitDuration: Duration(milliseconds: 400),
+    ),
   );
 }

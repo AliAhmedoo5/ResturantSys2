@@ -30,23 +30,11 @@ jobs:
           channel: stable
           flutter-version: '3.47.0'
           cache: true
-      - name: Generate initial native runner on GitHub only
-        run: |
-          if (!(Test-Path windows/CMakeLists.txt)) {
-            $seed = Join-Path $env:RUNNER_TEMP 'crunch_cartel_seed'
-            flutter create --platforms=windows --project-name=crunch_cartel --org=com.crunchcartel --no-pub $seed
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            Copy-Item -LiteralPath (Join-Path $seed 'windows') -Destination windows -Recurse
-            Copy-Item -LiteralPath (Join-Path $seed '.metadata') -Destination .metadata
-            $main = Get-Content windows/runner/main.cpp -Raw
-            $main.Replace('L"crunch_cartel"', 'L"Crunch Cartel"').Replace('1280, 720', '1366, 768') | Set-Content windows/runner/main.cpp
-            $resource = Get-Content windows/runner/Runner.rc -Raw
-            $resource.Replace('"crunch_cartel"', '"Crunch Cartel"').Replace('com.crunchcartel', 'Crunch Cartel') | Set-Content windows/runner/Runner.rc
-          }
+      - name: Apply Crunch Cartel native branding on the hosted runner
+        run: ../../tool/brand_windows.ps1
       - name: Resolve dependencies
         run: |
-          if (Test-Path pubspec.lock) { flutter pub get --enforce-lockfile }
-          else { flutter pub get }
+          flutter pub get --enforce-lockfile
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Format source on the hosted runner
         run: dart format lib test
@@ -62,6 +50,8 @@ jobs:
             !apps/crunch_cartel/windows/flutter/ephemeral
             apps/crunch_cartel/pubspec.lock
             apps/crunch_cartel/.metadata
+      - name: Enforce committed source formatting
+        run: git diff --exit-code -- lib test
       - name: Analyze
         run: flutter analyze --fatal-infos
       - name: Test navigation, disabled checkout and DPI layouts
@@ -84,6 +74,17 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build release preview
         run: flutter build windows --release
+      - name: Native application startup smoke check
+        run: |
+          $executable = Resolve-Path build/windows/x64/runner/Release/crunch_cartel.exe
+          $appProcess = Start-Process -FilePath $executable -PassThru -WindowStyle Hidden
+          try {
+            Start-Sleep -Seconds 8
+            $appProcess.Refresh()
+            if ($appProcess.HasExited) { throw "Preview exited during startup: $($appProcess.ExitCode)" }
+          } finally {
+            if (!$appProcess.HasExited) { Stop-Process -Id $appProcess.Id }
+          }
       - name: Include preview instructions
         run: Copy-Item -LiteralPath ../../docs/PREVIEW.md -Destination build/windows/x64/runner/Release/README.md
       - name: Upload complete Windows application bundle
