@@ -14,6 +14,7 @@ void main() {
     (41625, 41600, -25), // Exact wallet 20000, final cash remainder.
     (41600, 41600, 0), // Exact wallet 20025, final cash remainder.
     (9223372036854775700, 9223372036854775700, 0),
+    (9223372036854775807, 9223372036854775800, -7),
   ];
   for (final (exact, payable, adjustment) in cases) {
     final result = CashRounding.forFinalBalance(exact);
@@ -31,14 +32,6 @@ void main() {
     rejectedNegative = true;
   }
   if (!rejectedNegative) throw StateError('Negative balance accepted');
-
-  var rejectedOverflow = false;
-  try {
-    CashRounding.forFinalBalance(9223372036854775807);
-  } on RangeError {
-    rejectedOverflow = true;
-  }
-  if (!rejectedOverflow) throw StateError('Rounded overflow accepted');
 
   // Every possible fractional rupee obeys the specified half-up boundary.
   for (var residue = 0; residue < 100; residue++) {
