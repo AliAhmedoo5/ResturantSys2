@@ -30,7 +30,7 @@ jobs:
       - name: Resolve package on the hosted runner
         run: dart pub get
       - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed lib test
+        run: dart format --output=show --set-exit-if-changed lib test
       - name: Analyze domain package
         run: dart analyze --fatal-infos
       - name: Run cash-rounding regression suite
