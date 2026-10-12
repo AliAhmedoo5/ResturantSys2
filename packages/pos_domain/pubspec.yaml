@@ -1,0 +1,6 @@
+name: pos_domain
+description: Pure business rules for the offline restaurant POS.
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: '>=3.4.0 <4.0.0'
