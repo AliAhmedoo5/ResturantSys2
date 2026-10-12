@@ -9,3 +9,4 @@
 - Transactional commands must coordinate audit, ledgers, inventory, version checks and idempotency. Never simulate persistence with in-memory data in a production workflow.
 - Zero/negative stock never blocks checkout, but missing/invalid recipes do. Manual payment recording only; no payment gateway integrations.
 - Do not commit credentials, real customer data, production databases or private report exports.
+- Branding override from the user (13 October 2026): Crunch Cartel, dark black surfaces and bright yellow accents. Follow docs/DESIGN.md instead of the older ivory/green palette.

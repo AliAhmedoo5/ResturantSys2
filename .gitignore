@@ -12,3 +12,6 @@ coverage/
 !.env.example
 *.pfx
 *.key
+.ci-downloads/
+**/windows/flutter/ephemeral/
+**/.flutter-plugins-dependencies

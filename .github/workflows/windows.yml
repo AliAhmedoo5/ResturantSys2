@@ -1,0 +1,95 @@
+name: Crunch Cartel Windows
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Test and build Windows preview
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/crunch_cartel
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.0'
+          cache: true
+      - name: Generate initial native runner on GitHub only
+        run: |
+          if (!(Test-Path windows/CMakeLists.txt)) {
+            $seed = Join-Path $env:RUNNER_TEMP 'crunch_cartel_seed'
+            flutter create --platforms=windows --project-name=crunch_cartel --org=com.crunchcartel --no-pub $seed
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            Copy-Item -LiteralPath (Join-Path $seed 'windows') -Destination windows -Recurse
+            Copy-Item -LiteralPath (Join-Path $seed '.metadata') -Destination .metadata
+            $main = Get-Content windows/runner/main.cpp -Raw
+            $main.Replace('L"crunch_cartel"', 'L"Crunch Cartel"').Replace('1280, 720', '1366, 768') | Set-Content windows/runner/main.cpp
+            $resource = Get-Content windows/runner/Runner.rc -Raw
+            $resource.Replace('"crunch_cartel"', '"Crunch Cartel"').Replace('com.crunchcartel', 'Crunch Cartel') | Set-Content windows/runner/Runner.rc
+          }
+      - name: Resolve dependencies
+        run: |
+          if (Test-Path pubspec.lock) { flutter pub get --enforce-lockfile }
+          else { flutter pub get }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Format source on the hosted runner
+        run: dart format lib test
+      - name: Save generated source for review and commit
+        uses: actions/upload-artifact@v4
+        with:
+          name: crunch-cartel-prepared-source
+          include-hidden-files: true
+          path: |
+            apps/crunch_cartel/lib
+            apps/crunch_cartel/test
+            apps/crunch_cartel/windows
+            !apps/crunch_cartel/windows/flutter/ephemeral
+            apps/crunch_cartel/pubspec.lock
+            apps/crunch_cartel/.metadata
+      - name: Analyze
+        run: flutter analyze --fatal-infos
+      - name: Test navigation, disabled checkout and DPI layouts
+        run: flutter test --reporter expanded
+      - name: Save UI screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crunch-cartel-ui-screenshots
+          path: apps/crunch_cartel/build/preview-screenshots
+          if-no-files-found: ignore
+      - name: Verify domain under the bundled Dart SDK
+        working-directory: packages/pos_domain
+        run: |
+          dart pub get
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dart analyze --fatal-infos
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dart run test/cash_rounding_test.dart
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build release preview
+        run: flutter build windows --release
+      - name: Include preview instructions
+        run: Copy-Item -LiteralPath ../../docs/PREVIEW.md -Destination build/windows/x64/runner/Release/README.md
+      - name: Upload complete Windows application bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: Crunch-Cartel-Windows-preview-${{ github.run_number }}
+          path: apps/crunch_cartel/build/windows/x64/runner/Release/
+          if-no-files-found: error
+          retention-days: 30
