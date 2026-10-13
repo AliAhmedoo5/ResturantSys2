@@ -37,3 +37,13 @@ No older database version has shipped. Version 1 creates only technical metadata
 The `Database foundation` workflow generates Drift code, resolves the committed lockfile, formats, analyzes and runs temporary-file SQLite tests exclusively on hosted Windows. First generation exports a prepared-source artifact; that source and lockfile must be imported and committed before the reproducibility gate can pass. Tests use synthetic SQL fixtures created on the runner, never checked-in database binaries.
 
 API references: [Drift native background connections](https://drift.simonbinder.eu/platforms/vm/) and [migration API](https://drift.simonbinder.eu/migrations/api/). Context7 tools were unavailable; official documentation was consulted.
+
+## Writer ownership (chunk 03b1)
+
+Every `PosDatabase.open` first takes an exclusive Windows byte-range lock in an adjacent `.writer.lock` file, before opening SQLite or creating schema. The handle remains owned until the database isolate closes. A second instance receives `DatabaseAlreadyOpenException`; unrelated filesystem failures retain their original error. Failed initialization closes SQLite and releases the lease. Repeated close calls share one completion future.
+
+Paths are resolved before selecting the marker, so relative segments, Windows case aliases and symbolic directory aliases converge on the same lock. The marker is deliberately never deleted: its existence does not indicate ownership, and retaining it avoids a delete/recreate race. Windows releases the handle lock on process termination. This API explicitly requires Windows because Unix advisory locks have different process semantics.
+
+This prevents cooperating POS instances from creating independent writers. It is not protection against another program directly editing SQLite or deleting/replacing files, and it does not detect hard-link aliases or mapped network drives. Provisioned AppData paths and ACL policy remain required before UI integration. Tests exercise simultaneous opens, repeated close, equivalent paths, stale markers, failed initialization and child-process normal/abrupt exit exclusively on GitHub-hosted Windows.
+
+The coordinator remains a following subchunk. Its durable tables need a schema upgrade; implement the verified backup prerequisite before adding those tables. This change leaves schema v1 intact. Reference: [Dart Windows file-lock semantics](https://api.dart.dev/dart-io/RandomAccessFile/lock.html).
