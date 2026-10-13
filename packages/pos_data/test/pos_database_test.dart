@@ -112,8 +112,8 @@ void main() {
       'unrelated schema version $version is refused without changing the file',
       () async {
         final raw = sqlite3.open(file.path);
-        raw.execute('CREATE TABLE unrelated (note TEXT)');
-        raw.execute("INSERT INTO unrelated VALUES ('keep me')");
+        raw.execute('CREATE TABLE sqlitex_user_data (note TEXT)');
+        raw.execute("INSERT INTO sqlitex_user_data VALUES ('keep me')");
         raw.execute('PRAGMA user_version = $version');
         raw.close();
         final original = await file.readAsBytes();

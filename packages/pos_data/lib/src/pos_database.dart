@@ -82,7 +82,7 @@ void _configureConnection(sqlite.Database database) {
   final appId =
       database.select('PRAGMA application_id').single.values.single as int;
   final objects = database.select(
-    "SELECT name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'",
+    "SELECT name FROM sqlite_master WHERE name NOT GLOB 'sqlite_*'",
   );
   final fresh = version == 0 && appId == 0 && objects.isEmpty;
   if (!fresh &&
