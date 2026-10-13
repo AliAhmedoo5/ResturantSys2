@@ -6,7 +6,7 @@ import 'package:pos_data/pos_data.dart';
 Future<void> main(List<String> arguments) async {
   try {
     final database = await PosDatabase.open(File(arguments.single));
-    stdout.writeln('READY');
+    stdout.writeln('\nREADY');
     await stdout.flush();
     final command = await stdin
         .transform(utf8.decoder)
