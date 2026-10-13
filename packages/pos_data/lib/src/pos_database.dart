@@ -27,7 +27,10 @@ class PosDatabase extends _$PosDatabase {
     final PosDatabase database;
     try {
       database = PosDatabase._(
-        NativeDatabase.createInBackground(lease.file, setup: _configureConnection),
+        NativeDatabase.createInBackground(
+          lease.file,
+          setup: _configureConnection,
+        ),
         lease,
       );
     } catch (_) {

@@ -20,18 +20,27 @@ void main() {
     await directory.delete(recursive: true);
   });
 
-  test('second instance is denied and repeated close releases ownership', () async {
-    final first = await PosDatabase.open(file);
-    try {
-      await expectLater(PosDatabase.open(file), throwsA(isA<DatabaseAlreadyOpenException>()));
-      await expectLater(PosDatabase.open(file), throwsA(isA<DatabaseAlreadyOpenException>()));
-      await first.customSelect('SELECT 1').getSingle();
-    } finally {
-      await Future.wait([first.close(), first.close()]);
-    }
-    final reopened = await PosDatabase.open(file);
-    await reopened.close();
-  });
+  test(
+    'second instance is denied and repeated close releases ownership',
+    () async {
+      final first = await PosDatabase.open(file);
+      try {
+        await expectLater(
+          PosDatabase.open(file),
+          throwsA(isA<DatabaseAlreadyOpenException>()),
+        );
+        await expectLater(
+          PosDatabase.open(file),
+          throwsA(isA<DatabaseAlreadyOpenException>()),
+        );
+        await first.customSelect('SELECT 1').getSingle();
+      } finally {
+        await Future.wait([first.close(), first.close()]);
+      }
+      final reopened = await PosDatabase.open(file);
+      await reopened.close();
+    },
+  );
 
   test('concurrent first opens produce exactly one writer', () async {
     Future<PosDatabase?> attempt() async {
@@ -41,6 +50,7 @@ void main() {
         return null;
       }
     }
+
     final results = await Future.wait([attempt(), attempt(), attempt()]);
     try {
       expect(results.whereType<PosDatabase>().length, 1);
@@ -55,8 +65,14 @@ void main() {
     final first = await PosDatabase.open(file);
     try {
       final alias = File('${directory.path}/./pos.db');
-      await expectLater(PosDatabase.open(alias), throwsA(isA<DatabaseAlreadyOpenException>()));
-      await expectLater(PosDatabase.open(File(file.path.toUpperCase())), throwsA(isA<DatabaseAlreadyOpenException>()));
+      await expectLater(
+        PosDatabase.open(alias),
+        throwsA(isA<DatabaseAlreadyOpenException>()),
+      );
+      await expectLater(
+        PosDatabase.open(File(file.path.toUpperCase())),
+        throwsA(isA<DatabaseAlreadyOpenException>()),
+      );
     } finally {
       await first.close();
     }
@@ -79,17 +95,29 @@ void main() {
     await database.close();
   });
 
-  test('missing directory preserves storage error instead of reporting contention', () async {
-    await expectLater(PosDatabase.open(File('${directory.path}/missing/pos.db')), throwsA(isA<FileSystemException>()));
-  });
+  test(
+    'missing directory preserves storage error instead of reporting contention',
+    () async {
+      await expectLater(
+        PosDatabase.open(File('${directory.path}/missing/pos.db')),
+        throwsA(isA<FileSystemException>()),
+      );
+    },
+  );
 
   for (final command in ['close', 'crash']) {
     test('child process owns writer until $command', () async {
-      final child = await Process.start(Platform.resolvedExecutable, [
-        'run', 'test/support/writer_process.dart', file.path,
+      final dartHome = Platform.environment['DART_HOME'];
+      if (dartHome == null) throw StateError('Hosted Dart SDK path is required.');
+      final child = await Process.start('$dartHome/bin/dart.exe', [
+        'run',
+        'test/support/writer_process.dart',
+        file.path,
       ]);
       final errors = child.stderr.transform(utf8.decoder).join();
-      final output = StreamIterator(child.stdout.transform(utf8.decoder).transform(const LineSplitter()));
+      final output = StreamIterator(
+        child.stdout.transform(utf8.decoder).transform(const LineSplitter()),
+      );
       try {
         var ready = false;
         while (await output.moveNext().timeout(const Duration(seconds: 60))) {
@@ -98,11 +126,18 @@ void main() {
             break;
           }
         }
-        expect(ready, isTrue, reason: 'Child failed to open the database');
-        await expectLater(PosDatabase.open(file), throwsA(isA<DatabaseAlreadyOpenException>()));
+        expect(ready, isTrue, reason: ready ? null : await errors);
+        await expectLater(
+          PosDatabase.open(file),
+          throwsA(isA<DatabaseAlreadyOpenException>()),
+        );
         child.stdin.writeln(command);
         await child.stdin.flush();
-        expect(await child.exitCode.timeout(const Duration(seconds: 20)), 0, reason: await errors);
+        expect(
+          await child.exitCode.timeout(const Duration(seconds: 20)),
+          0,
+          reason: await errors,
+        );
         final reopened = await PosDatabase.open(file);
         await reopened.close();
       } finally {

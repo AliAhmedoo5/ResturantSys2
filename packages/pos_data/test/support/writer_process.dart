@@ -8,7 +8,10 @@ Future<void> main(List<String> arguments) async {
     final database = await PosDatabase.open(File(arguments.single));
     stdout.writeln('READY');
     await stdout.flush();
-    final command = await stdin.transform(utf8.decoder).transform(const LineSplitter()).first;
+    final command = await stdin
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .first;
     if (command == 'crash') {
       // Intentionally bypasses close/finally, exercising OS crash lock release.
       exit(0);

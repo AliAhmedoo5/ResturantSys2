@@ -30,12 +30,14 @@ class DatabaseWriterLease {
     } else {
       final directory = await requestedFile.parent.resolveSymbolicLinks();
       final name = requestedFile.uri.pathSegments.last;
-      canonicalFile = File.fromUri(Directory(directory).uri.resolveUri(Uri(path: name)));
+      canonicalFile = File.fromUri(
+        Directory(directory).uri.resolveUri(Uri(path: name)),
+      );
     }
     _requireLocalAbsolutePath(canonicalFile);
-    final handle = await File('${canonicalFile.path}.writer.lock').open(
-      mode: FileMode.append,
-    );
+    final handle = await File(
+      '${canonicalFile.path}.writer.lock',
+    ).open(mode: FileMode.append);
     try {
       // A single fixed byte range also works on an empty marker file.
       await handle.lock(FileLock.exclusive, 0, 1);
@@ -65,7 +67,8 @@ class DatabaseWriterLease {
 }
 
 void _requireLocalAbsolutePath(File file) {
-  if (!file.isAbsolute || file.path.startsWith(r'\\') ||
+  if (!file.isAbsolute ||
+      file.path.startsWith(r'\\') ||
       file.path.startsWith('//')) {
     throw ArgumentError('An absolute local database file is required.');
   }
