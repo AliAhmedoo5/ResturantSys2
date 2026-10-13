@@ -18,7 +18,8 @@ class PosDatabase extends _$PosDatabase {
   /// The caller supplies an absolute file in a provisioned local data directory.
   /// Failures are propagated; no reset, repair or in-memory fallback is attempted.
   static Future<PosDatabase> open(File file) async {
-    if (!file.isAbsolute || file.path.startsWith(r'\\') ||
+    if (!file.isAbsolute ||
+        file.path.startsWith(r'\\') ||
         file.path.startsWith('//')) {
       throw ArgumentError('An absolute local database file is required.');
     }
@@ -57,12 +58,14 @@ class PosDatabase extends _$PosDatabase {
       final identity = await customSelect(
         'SELECT singleton, format_tag FROM database_metadata',
       ).get();
-      if (identity.length != 1 || identity.single.read<int>('singleton') != 1 ||
+      if (identity.length != 1 ||
+          identity.single.read<int>('singleton') != 1 ||
           identity.single.read<String>('format_tag') != 'crunch-cartel') {
         throw StateError('Database identity is invalid.');
       }
       final integrity = await customSelect('PRAGMA quick_check').get();
-      if (integrity.length != 1 || integrity.single.data.values.single != 'ok') {
+      if (integrity.length != 1 ||
+          integrity.single.data.values.single != 'ok') {
         throw StateError('Database integrity check failed.');
       }
       if ((await customSelect('PRAGMA foreign_key_check').get()).isNotEmpty) {
@@ -74,18 +77,25 @@ class PosDatabase extends _$PosDatabase {
 
 // Runs in the database isolate, before Drift can perform schema mutations.
 void _configureConnection(sqlite.Database database) {
-  final version = database.select('PRAGMA user_version').single.values.single as int;
-  final appId = database.select('PRAGMA application_id').single.values.single as int;
+  final version =
+      database.select('PRAGMA user_version').single.values.single as int;
+  final appId =
+      database.select('PRAGMA application_id').single.values.single as int;
   final objects = database.select(
     "SELECT name FROM sqlite_master WHERE name NOT LIKE 'sqlite_%'",
   );
   final fresh = version == 0 && appId == 0 && objects.isEmpty;
-  if (!fresh && (appId != PosDatabase.applicationId ||
-      version != PosDatabase.currentSchemaVersion)) {
+  if (!fresh &&
+      (appId != PosDatabase.applicationId ||
+          version != PosDatabase.currentSchemaVersion)) {
     throw StateError('Unsupported database identity or schema version.');
   }
   database.execute('PRAGMA busy_timeout = 5000');
-  final mode = database.select('PRAGMA journal_mode = WAL').single.values.single;
+  final mode = database
+      .select('PRAGMA journal_mode = WAL')
+      .single
+      .values
+      .single;
   if (mode != 'wal') throw StateError('WAL mode is required.');
   database.execute('PRAGMA synchronous = FULL');
   database.execute('PRAGMA foreign_keys = ON');
