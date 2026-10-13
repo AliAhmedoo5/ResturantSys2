@@ -1,0 +1,52 @@
+name: Database foundation
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: database-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  database:
+    name: Windows database checks
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: packages/pos_data
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: '3.13.5'
+      - name: Resolve dependencies on hosted runner
+        run: |
+          if (Test-Path pubspec.lock) { dart pub get --enforce-lockfile } else { dart pub get }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Generate Drift source on hosted runner
+        run: dart run build_runner build
+      - name: Format on hosted runner
+        run: dart format lib test
+      - name: Save prepared source
+        uses: actions/upload-artifact@v4
+        with:
+          name: pos-data-prepared-source
+          path: |
+            packages/pos_data/lib
+            packages/pos_data/test
+            packages/pos_data/pubspec.lock
+      - name: Analyze
+        run: dart analyze --fatal-infos
+      - name: Test file persistence and failure handling
+        run: dart test --reporter expanded
+      - name: Require committed formatting and generated source
+        run: |
+          git diff --exit-code -- lib test pubspec.lock
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $untracked = git ls-files --others --exclude-standard -- lib test pubspec.lock
+          if ($untracked) { throw "Import the hosted prepared-source artifact before verification: $untracked" }

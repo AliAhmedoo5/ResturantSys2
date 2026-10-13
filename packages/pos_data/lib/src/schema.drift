@@ -1,0 +1,4 @@
+CREATE TABLE database_metadata (
+  singleton INTEGER NOT NULL PRIMARY KEY CHECK (singleton = 1),
+  format_tag TEXT NOT NULL CHECK (format_tag = 'crunch-cartel')
+);
