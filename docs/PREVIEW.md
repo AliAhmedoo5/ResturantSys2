@@ -9,3 +9,7 @@ Development execution, tests, screenshots and builds run exclusively on GitHub-h
 Navigation: use the welcome screen to preview Counter or Management; return using Welcome or Ctrl+Home. F1 opens keyboard help. Tab/Shift+Tab moves focus; Enter/Space activates controls; Escape closes dialogs.
 
 The setup guide describes the later required sequence: restaurant settings, Manager PIN, distinct primary Cashier with four-digit PIN, recipes/menu, Manager day opening, Cashier login and shift opening. It is not an executable wizard in this chunk.
+
+## Verified preview build
+
+Commit `185de7500a1dcde083a040985557270dfb25b99a` passed [Windows Actions](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38298514648), including analysis, four widget tests, domain regressions, release compilation and native startup. Download [Crunch-Cartel-Windows-preview-3](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38298514648/artifacts/11770316522) while the artifact remains available (30-day retention). Screenshots from the same run cover welcome, counter, management and setup at 100%, 125% and 150% DPI. These checks verify the preview only; production and restaurant-hardware acceptance remain pending.

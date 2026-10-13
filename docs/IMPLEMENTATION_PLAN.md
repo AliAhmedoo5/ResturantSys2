@@ -29,8 +29,11 @@ Each numbered chunk is a separate reviewable change. Feature chunks include pers
 ## Progress
 
 - Chunk 01: implemented; formatting, analysis and cash-rounding regression suite passed on GitHub-hosted Windows, commit `6780c0d`, [Actions evidence](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38296356193). Includes all 100 fractional-rupee residues, split cash balance examples, negative-input rejection and the maximum signed integer boundary.
-- Chunk 02: implementation in progress. User branding overrides the older palette: Crunch Cartel, black and bright yellow. Preview-only Flutter navigation, theme, Windows runner and CI artifacts are being verified; no operational login or billing is claimed.
-- Chunks 03–21: not implemented.
+- Chunk 02: verified for preview scope at commit `185de7500a1dcde083a040985557270dfb25b99a`. [Windows Actions evidence](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38298514648): committed formatting unchanged, Flutter analysis clean, all four widget tests passed (preview navigation, disabled checkout, keyboard help and four routes at 100%/125%/150% DPI), bundled-SDK domain regressions passed, release build passed and native startup smoke check passed. [Standalone domain evidence](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38298514545) also passed. Available artifacts checked 13 October 2026: `Crunch-Cartel-Windows-preview-3`, `crunch-cartel-ui-screenshots` and `crunch-cartel-prepared-source`. The 150% counter screenshot was visually inspected: cart and disabled checkout remain visible. This is an unsigned design preview; real authentication, persistence and billing remain unimplemented, and restaurant-hardware acceptance is outstanding.
+- Chunk 03a: implemented, awaiting hosted CI. File-backed Drift schema v1, background connection, WAL/FULL synchronous/foreign-key settings, database identity and version guards, file persistence and failure tests. Not connected to preview UI or financial commands.
+- Chunk 03b: pending. Transaction coordinator, durable idempotency/audit, version checks, clock/ID seams and writer ownership. Review posted-event invariants before monetary posting.
+- Chunk 03c: pending. Backup-gated forward migrations, historical upgrade fixtures (including chapter 32.2), recovery and platform storage integration. Chunk 03 as a whole is not verified.
+- Chunks 04–21: not implemented.
 - No local dependency installation, test, formatter, app execution or build has been performed.
 
 ## Completion evidence per chunk
