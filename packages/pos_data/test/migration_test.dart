@@ -42,6 +42,27 @@ int version(File file) {
   }
 }
 
+// Frozen v2 history definition; do not derive from current generated tables.
+void createV2(File file) {
+  createV1(file);
+  final old = sqlite3.open(file.path);
+  try {
+    old.execute('''
+      CREATE TABLE schema_upgrades (
+        to_version INTEGER NOT NULL PRIMARY KEY CHECK (to_version >= 2),
+        from_version INTEGER NOT NULL CHECK (from_version >= 1 AND from_version < to_version),
+        applied_at_utc TEXT NOT NULL,
+        app_version TEXT NOT NULL,
+        backup_directory TEXT NOT NULL,
+        backup_sha256 TEXT NOT NULL CHECK (length(backup_sha256) = 64)
+      );
+      PRAGMA user_version = 2;
+    ''');
+    old.execute('INSERT INTO schema_upgrades VALUES (?, ?, ?, ?, ?, ?)',
+      [2, 1, '2026-10-14T00:00:00.000Z', 'old-test', 'synthetic-old-backup', 'a' * 64]);
+  } finally { old.close(); }
+}
+
 void main() {
   late Directory root;
   late Directory backups;
@@ -79,7 +100,7 @@ void main() {
               .data
               .values
               .single,
-          2,
+          PosDatabase.currentSchemaVersion,
         );
         final rows = await db
             .customSelect('SELECT * FROM preservation_probe ORDER BY id')
@@ -98,7 +119,7 @@ void main() {
             .customSelect('SELECT * FROM schema_upgrades')
             .getSingle();
         expect(entry.read<int>('from_version'), 1);
-        expect(entry.read<int>('to_version'), 2);
+        expect(entry.read<int>('to_version'), PosDatabase.currentSchemaVersion);
         expect(
           DateTime.parse(entry.read<String>('applied_at_utc')).isUtc,
           isTrue,
@@ -151,7 +172,7 @@ void main() {
       expect(await backups.list().toList(), isEmpty);
       final retry = await PosDatabase.open(file, migrationBackup: policy());
       await retry.close();
-      expect(version(file), 2);
+      expect(version(file), PosDatabase.currentSchemaVersion);
     },
   );
 
@@ -249,7 +270,7 @@ void main() {
   });
 
   test(
-    'fresh and upgraded v2 databases expose the same history schema',
+    'fresh and upgraded databases expose the same history schema',
     () async {
       createV1(file);
       final upgraded = await PosDatabase.open(file, migrationBackup: policy());
@@ -277,7 +298,7 @@ void main() {
   );
 
   test(
-    'v2 missing migration-history table fails instead of silently repairing it',
+    'current database missing migration history fails without silent repair',
     () async {
       final db = await PosDatabase.open(file);
       await db.customStatement('DROP TABLE schema_upgrades');
@@ -289,4 +310,51 @@ void main() {
       expect(await backups.list().toList(), isEmpty);
     },
   );
+
+  test('v2 upgrade preserves history and adds empty guarded command tables', () async {
+    createV2(file);
+    final db = await PosDatabase.open(file, migrationBackup: policy());
+    final fresh = await PosDatabase.open(File('${root.path}/fresh.db'));
+    try {
+      final rows = await db.customSelect('SELECT * FROM schema_upgrades ORDER BY to_version').get();
+      expect(rows.length, 2);
+      expect(rows.first.read<String>('backup_directory'), 'synthetic-old-backup');
+      expect(rows.last.read<int>('from_version'), 2);
+      expect(rows.last.read<int>('to_version'), 3);
+      final backup = await PosDatabase.verifySnapshot(Directory(rows.last.read<String>('backup_directory')));
+      expect(backup.schemaVersion, 2);
+      for (final table in ['idempotency_commands', 'command_versions', 'audit_events']) {
+        expect(await db.customSelect('SELECT * FROM $table').get(), isEmpty);
+        expect((await db.customSelect('PRAGMA table_info($table)').get()).map((r) => r.data),
+          (await fresh.customSelect('PRAGMA table_info($table)').get()).map((r) => r.data));
+      }
+    } finally { await db.close(); await fresh.close(); }
+  });
+
+  test('v2 requires a verified backup before upgrade', () async {
+    createV2(file);
+    await expectLater(PosDatabase.open(file), throwsA(isA<MigrationBackupRequiredException>()));
+    expect(version(file), 2);
+  });
+
+  test('v2 table collision rolls back and retains recovery archive', () async {
+    createV2(file);
+    final raw = sqlite3.open(file.path);
+    raw.execute('CREATE TABLE audit_events (note TEXT)');
+    raw.execute("INSERT INTO audit_events VALUES ('preserve')");
+    raw.close();
+    await expectLater(PosDatabase.open(file, migrationBackup: policy()), throwsA(isA<DatabaseMigrationException>()));
+    expect(version(file), 2);
+    final after = sqlite3.open(file.path, mode: OpenMode.readOnly);
+    try { expect(after.select('SELECT note FROM audit_events').single['note'], 'preserve'); }
+    finally { after.close(); }
+    expect(await backups.list().length, 1);
+  });
+
+  test('missing immutable-history trigger refuses reopening', () async {
+    final db = await PosDatabase.open(file);
+    await db.customStatement('DROP TRIGGER audit_events_no_update');
+    await db.close();
+    await expectLater(PosDatabase.open(file), throwsA(anything));
+  });
 }
