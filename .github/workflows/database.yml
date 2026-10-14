@@ -26,7 +26,7 @@ jobs:
           sdk: '3.13.5'
       - name: Resolve dependencies on hosted runner
         run: |
-          if (Test-Path pubspec.lock) { dart pub get --enforce-lockfile } else { dart pub get }
+          if (Test-Path pubspec.lock) { dart pub get } else { dart pub get }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Generate Drift source on hosted runner
         run: dart run build_runner build

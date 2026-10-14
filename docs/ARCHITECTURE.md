@@ -49,3 +49,13 @@ This prevents cooperating POS instances from creating independent writers. It is
 The coordinator remains a following subchunk. Its durable tables need a schema upgrade; implement the verified backup prerequisite before adding those tables. This change leaves schema v1 intact. Reference: [Dart Windows file-lock semantics](https://api.dart.dev/dart-io/RandomAccessFile/lock.html).
 
 The hosted workflow compiles the separate-process helper with `dart build cli` before running tests. The executable has its own native SQLite assets; launching a nested `dart run` would attempt to replace the test process''s loaded DLL on Windows. Reference: [Dart CLI build](https://dart.dev/tools/dart-build).
+
+## Verified snapshots (chunk 03c1)
+
+`PosDatabase.createSnapshot` uses SQLite `VACUUM INTO` to capture committed state including WAL pages. The live database is not copied or checkpointed as a backup shortcut. The output starts in a unique staging directory under an existing caller-provisioned local backup destination. The copy is converted to standalone DELETE journaling and checked for application identity, schema version, integrity and foreign-key consistency on a worker isolate. Its manifest includes SHA-256, byte size, UTC creation time, app version, schema version, validation state and an explicit `encrypted: false`. Business-day metadata is null until the business-day model exists.
+
+Database and flushed manifest are published together by same-parent directory rename. Failures clean only the current staging directory; a missing destination is not recreated or treated as success. A process crash can leave a `.pending-` folder, which is not a published archive. Callers must await completion before closing storage and cannot call the snapshot operation inside a transaction.
+
+`PosDatabase.verifySnapshot` checks the manifest, content hash/size, database identity, schema, full integrity and foreign keys independently in a worker isolate without modifying database contents. Checksums detect accidental corruption, not malicious replacement of both content and manifest. The archive remains unencrypted; ACL provisioning, encryption/key recovery, retention, migration gating, restore authorization and hardware power-loss testing remain future work. No customer data or database archive is committed or uploaded by CI; tests create synthetic fixtures on the hosted runner.
+
+Reference: [SQLite VACUUM INTO consistency and durability](https://www.sqlite.org/lang_vacuum.html). Version 1 business tables are unchanged. Do not equate this backup seam with verified forward migrations or production disaster recovery.

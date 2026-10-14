@@ -5,6 +5,7 @@ import 'package:drift/native.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 import 'database_writer_lease.dart';
+import 'backup_snapshot.dart';
 
 part 'pos_database.g.dart';
 
@@ -15,6 +16,14 @@ class PosDatabase extends _$PosDatabase {
 
   final DatabaseWriterLease _writerLease;
   Future<void>? _closing;
+
+  /// Internal backup seam; callers must await completion before closing storage.
+  /// Never invoke from inside a transaction or use this as restore authorization.
+  Future<DatabaseSnapshot> createSnapshot(Directory destination, {required String appVersion}) =>
+      createVerifiedSnapshot(this, destination, appVersion: appVersion, applicationId: applicationId);
+
+  static Future<DatabaseSnapshot> verifySnapshot(Directory directory) =>
+      verifyDatabaseSnapshot(directory, applicationId: applicationId, maximumSchemaVersion: currentSchemaVersion);
 
   static const currentSchemaVersion = 1;
   // ASCII CCRT, within SQLite's signed 32-bit application_id range.
