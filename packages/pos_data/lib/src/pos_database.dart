@@ -13,7 +13,11 @@ part 'pos_database.g.dart';
 /// Storage foundation only. Not yet connected to the preview or business commands.
 @DriftDatabase(include: {'schema.drift'})
 class PosDatabase extends _$PosDatabase {
-  PosDatabase._(QueryExecutor executor, this._writerLease, this._migrationBackup) : super(executor);
+  PosDatabase._(
+    QueryExecutor executor,
+    this._writerLease,
+    this._migrationBackup,
+  ) : super(executor);
 
   final DatabaseWriterLease _writerLease;
   final MigrationBackup? _migrationBackup;
@@ -44,7 +48,10 @@ class PosDatabase extends _$PosDatabase {
 
   /// The caller supplies an absolute file in a provisioned local data directory.
   /// Failures are propagated; no reset, repair or in-memory fallback is attempted.
-  static Future<PosDatabase> open(File file, {MigrationBackup? migrationBackup}) async {
+  static Future<PosDatabase> open(
+    File file, {
+    MigrationBackup? migrationBackup,
+  }) async {
     final lease = await DatabaseWriterLease.acquire(file);
     final PosDatabase database;
     try {
@@ -101,9 +108,13 @@ class PosDatabase extends _$PosDatabase {
       if (policy == null) throw const MigrationBackupRequiredException();
       // Drift does not wrap onUpgrade in a transaction. VACUUM INTO must finish
       // outside it; the writer lease remains held throughout backup and upgrade.
-      final snapshot = await createSnapshot(policy.directory, appVersion: policy.appVersion);
+      final snapshot = await createSnapshot(
+        policy.directory,
+        appVersion: policy.appVersion,
+      );
       final verified = await verifySnapshot(snapshot.directory);
-      if (verified.schemaVersion != from || verified.sha256Hex != snapshot.sha256Hex) {
+      if (verified.schemaVersion != from ||
+          verified.sha256Hex != snapshot.sha256Hex) {
         throw StateError('Pre-migration snapshot does not match the source.');
       }
       try {
@@ -111,7 +122,14 @@ class PosDatabase extends _$PosDatabase {
           await migrator.createTable(schemaUpgrades);
           await customStatement(
             'INSERT INTO schema_upgrades (to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256) VALUES (?, ?, ?, ?, ?, ?)',
-            [to, from, DateTime.now().toUtc().toIso8601String(), policy.appVersion, verified.directory.path, verified.sha256Hex],
+            [
+              to,
+              from,
+              DateTime.now().toUtc().toIso8601String(),
+              policy.appVersion,
+              verified.directory.path,
+              verified.sha256Hex,
+            ],
           );
           await _checkIntegrity();
           // Persist version and schema together; Drift's later version write is
@@ -119,7 +137,10 @@ class PosDatabase extends _$PosDatabase {
           await customStatement('PRAGMA user_version = 2');
         });
       } catch (error) {
-        throw DatabaseMigrationException(backupDirectory: verified.directory, cause: error);
+        throw DatabaseMigrationException(
+          backupDirectory: verified.directory,
+          cause: error,
+        );
       }
     },
     beforeOpen: (_) async {
@@ -141,13 +162,16 @@ class PosDatabase extends _$PosDatabase {
         throw StateError('Database foreign key check failed.');
       }
       // Also fail closed if a v2 database has lost its technical history table.
-      await customSelect('SELECT to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256 FROM schema_upgrades LIMIT 1').get();
+      await customSelect(
+        'SELECT to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256 FROM schema_upgrades LIMIT 1',
+      ).get();
     },
   );
 
   Future<void> _checkIntegrity() async {
     final integrity = await customSelect('PRAGMA integrity_check').get();
-    if (integrity.length != 1 || integrity.single.data.values.single != 'ok' ||
+    if (integrity.length != 1 ||
+        integrity.single.data.values.single != 'ok' ||
         (await customSelect('PRAGMA foreign_key_check').get()).isNotEmpty) {
       throw StateError('Migration integrity verification failed.');
     }
@@ -166,15 +190,20 @@ void _configureConnection(sqlite.Database database) {
   final fresh = version == 0 && appId == 0 && objects.isEmpty;
   if (!fresh &&
       (appId != PosDatabase.applicationId ||
-          version < 1 || version > PosDatabase.currentSchemaVersion)) {
+          version < 1 ||
+          version > PosDatabase.currentSchemaVersion)) {
     throw StateError('Unsupported database identity or schema version.');
   }
   if (!fresh) {
-    final identity = database.select('SELECT singleton, format_tag FROM database_metadata');
+    final identity = database.select(
+      'SELECT singleton, format_tag FROM database_metadata',
+    );
     final integrity = database.select('PRAGMA integrity_check');
-    if (identity.length != 1 || identity.single['singleton'] != 1 ||
+    if (identity.length != 1 ||
+        identity.single['singleton'] != 1 ||
         identity.single['format_tag'] != 'crunch-cartel' ||
-        integrity.length != 1 || integrity.single.values.single != 'ok' ||
+        integrity.length != 1 ||
+        integrity.single.values.single != 'ok' ||
         database.select('PRAGMA foreign_key_check').isNotEmpty) {
       throw StateError('Source database validation failed before migration.');
     }
