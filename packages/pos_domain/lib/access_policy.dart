@@ -50,40 +50,43 @@ abstract final class AccessPolicy {
     StaffRole role,
     Capability capability, {
     bool riderOperationsEnabled = false,
-  }) => switch (capability) {
-    Capability.lockOwnSession => true,
-    Capability.operateRiderTrips =>
-      role == StaffRole.cashier && riderOperationsEnabled,
-    Capability.manageLiveCart ||
-    Capability.searchCustomerForBilling ||
-    Capability.confirmCheckout ||
-    Capability.applyPublishedDiscount ||
-    Capability.updateFulfillment ||
-    Capability.openCashierShift ||
-    Capability.submitBlindCount ||
-    Capability.reviseConfirmedOrder ||
-    Capability.cancelConfirmedOrder ||
-    Capability.recordCollectedFundsRefund ||
-    Capability.recordCashierPayIn ||
-    Capability.recordCashierPayOut => role == StaffRole.cashier,
-    Capability.reviewOperations ||
-    Capability.reviewShiftDiscrepancy ||
-    Capability.manageBusinessDay ||
-    Capability.manageCatalogRecipesDeals ||
-    Capability.manageDiscountDefinitions ||
-    Capability.manageInventory ||
-    Capability.manageSuppliersPurchases ||
-    Capability.manageStaffPayroll ||
-    Capability.manageCredentials ||
-    Capability.manageExpenseCategories ||
-    Capability.postAdministrativeFinance ||
-    Capability.manageShortcuts ||
-    Capability.manageSecuritySettings ||
-    Capability.manageBackupsRestore ||
-    Capability.viewManagementReports ||
-    Capability.manageReportDelivery => role == StaffRole.manager,
-    Capability.rewritePostedHistory => false,
-  };
+  }) =>
+      switch (capability) {
+        Capability.lockOwnSession => true,
+        Capability.operateRiderTrips =>
+          role == StaffRole.cashier && riderOperationsEnabled,
+        Capability.manageLiveCart ||
+        Capability.searchCustomerForBilling ||
+        Capability.confirmCheckout ||
+        Capability.applyPublishedDiscount ||
+        Capability.updateFulfillment ||
+        Capability.openCashierShift ||
+        Capability.submitBlindCount ||
+        Capability.reviseConfirmedOrder ||
+        Capability.cancelConfirmedOrder ||
+        Capability.recordCollectedFundsRefund ||
+        Capability.recordCashierPayIn ||
+        Capability.recordCashierPayOut =>
+          role == StaffRole.cashier,
+        Capability.reviewOperations ||
+        Capability.reviewShiftDiscrepancy ||
+        Capability.manageBusinessDay ||
+        Capability.manageCatalogRecipesDeals ||
+        Capability.manageDiscountDefinitions ||
+        Capability.manageInventory ||
+        Capability.manageSuppliersPurchases ||
+        Capability.manageStaffPayroll ||
+        Capability.manageCredentials ||
+        Capability.manageExpenseCategories ||
+        Capability.postAdministrativeFinance ||
+        Capability.manageShortcuts ||
+        Capability.manageSecuritySettings ||
+        Capability.manageBackupsRestore ||
+        Capability.viewManagementReports ||
+        Capability.manageReportDelivery =>
+          role == StaffRole.manager,
+        Capability.rewritePostedHistory => false,
+      };
 
   static void require(
     StaffRole role,
@@ -91,7 +94,7 @@ abstract final class AccessPolicy {
     bool riderOperationsEnabled = false,
   }) {
     if (!allows(role, capability,
-      riderOperationsEnabled: riderOperationsEnabled)) {
+        riderOperationsEnabled: riderOperationsEnabled)) {
       throw const AuthorizationDenied();
     }
   }
