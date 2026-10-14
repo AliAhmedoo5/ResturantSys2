@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
@@ -23,6 +24,18 @@ class PosDatabase extends _$PosDatabase {
   final MigrationBackup? _migrationBackup;
   (Object, StackTrace)? _migrationFailure;
   Future<void>? _closing;
+  final Object _transactionScope = Object();
+
+  bool get isInsideTransaction => Zone.current[_transactionScope] == true;
+
+  @override
+  Future<T> transaction<T>(
+    Future<T> Function() action, {
+    bool requireNew = false,
+  }) => super.transaction(
+    () => runZoned(action, zoneValues: {_transactionScope: true}),
+    requireNew: requireNew,
+  );
 
   /// Internal backup seam; callers must await completion before closing storage.
   /// Never invoke from inside a transaction or use this as restore authorization.
@@ -43,7 +56,7 @@ class PosDatabase extends _$PosDatabase {
         maximumSchemaVersion: currentSchemaVersion,
       );
 
-  static const currentSchemaVersion = 2;
+  static const currentSchemaVersion = 3;
   // ASCII CCRT, within SQLite's signed 32-bit application_id range.
   static const applicationId = 0x43435254;
 
@@ -103,7 +116,7 @@ class PosDatabase extends _$PosDatabase {
       });
     },
     onUpgrade: (migrator, from, to) => _recordMigrationFailure(() async {
-      if (from != 1 || to != 2) {
+      if ((from != 1 && from != 2) || to != 3) {
         throw StateError('Unsupported database migration: $from -> $to');
       }
       final policy = _migrationBackup;
@@ -121,7 +134,21 @@ class PosDatabase extends _$PosDatabase {
       }
       try {
         await transaction(() async {
-          await migrator.createTable(schemaUpgrades);
+          if (from == 1) await migrator.createTable(schemaUpgrades);
+          final collisions = await customSelect(
+            "SELECT name FROM sqlite_master WHERE name IN ('idempotency_commands', 'command_versions', 'audit_events', 'audit_events_no_update', 'audit_events_no_delete', 'commands_no_update', 'commands_no_delete')",
+          ).get();
+          if (collisions.isNotEmpty) {
+            throw StateError(
+              'Command schema already exists in an old database.',
+            );
+          }
+          await migrator.createTable(idempotencyCommands);
+          await migrator.createTable(commandVersions);
+          await migrator.createTable(auditEvents);
+          for (final trigger in allSchemaEntities.whereType<Trigger>()) {
+            await migrator.createTrigger(trigger);
+          }
           await customStatement(
             'INSERT INTO schema_upgrades (to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256) VALUES (?, ?, ?, ?, ?, ?)',
             [
@@ -136,7 +163,7 @@ class PosDatabase extends _$PosDatabase {
           await _checkIntegrity();
           // Persist version and schema together; Drift's later version write is
           // idempotent. A process exit cannot leave new tables labelled v1.
-          await customStatement('PRAGMA user_version = 2');
+          await customStatement('PRAGMA user_version = 3');
         });
       } catch (error) {
         throw DatabaseMigrationException(
@@ -167,6 +194,23 @@ class PosDatabase extends _$PosDatabase {
       await customSelect(
         'SELECT to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256 FROM schema_upgrades LIMIT 1',
       ).get();
+      await customSelect(
+        'SELECT intent_key, kind, request_hash, result_json, created_at_utc FROM idempotency_commands LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT entity_type, entity_id, revision FROM command_versions LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT id, command_id, entity_type, entity_id, event_type, actor_id, session_id, approver_id, business_day_id, terminal_id, app_version, reason, before_json, after_json, created_at_utc FROM audit_events LIMIT 1',
+      ).get();
+      for (final trigger in allSchemaEntities.whereType<Trigger>()) {
+        final stored = await customSelect(
+          'SELECT name FROM sqlite_master WHERE type = ? AND name = ?',
+          variables: [Variable('trigger'), Variable(trigger.entityName)],
+        ).get();
+        if (stored.length != 1)
+          throw StateError('Missing immutable-history guard.');
+      }
     },
   );
 

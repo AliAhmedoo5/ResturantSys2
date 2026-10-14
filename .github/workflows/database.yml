@@ -3,6 +3,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      refresh_lock:
+        description: Resolve an intentionally changed dependency manifest
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -26,7 +31,7 @@ jobs:
           sdk: '3.13.5'
       - name: Resolve dependencies on hosted runner
         run: |
-          if (Test-Path pubspec.lock) { dart pub get --enforce-lockfile } else { dart pub get }
+          if ('${{ inputs.refresh_lock }}' -eq 'true' -or !(Test-Path pubspec.lock)) { dart pub get } else { dart pub get --enforce-lockfile }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Generate Drift source on hosted runner
         run: dart run build_runner build
