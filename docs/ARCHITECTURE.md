@@ -71,3 +71,9 @@ The upgrade adds `schema_upgrades` and records source/target versions, UTC times
 Frozen synthetic v1 SQL fixtures are created only on Actions. Tests cover preserved signed amounts/text, source-version archives, identical fresh/upgraded history columns, missing backup configuration/destination, invalid metadata, schema conflicts, retry and missing v2 history. This subchunk does not claim hardware power-loss recovery, a restore wizard, AppData/ACL integration, or chapter 32.2 financial table migration acceptance. Those require later chunks and real schema prerequisites.
 
 References: [Drift migration transaction boundaries](https://drift.simonbinder.eu/migrations/api/), [SQLite transactional commit and rollback](https://www.sqlite.org/lang_transaction.html).
+
+## Command clock and record identifiers (chunk 03b2a)
+
+The pure Dart domain exposes `CommandClock` and `RecordIdSource` as injectable dependencies for forthcoming command services. Production implementations return UTC wall time and opaque 128-bit secure random identifiers encoded as 32 lowercase hexadecimal characters. Entropy failures propagate. Test implementations can supply fixed time and a deterministic ID sequence without Flutter or SQLite.
+
+Wall time is not monotonic and must never decide ordering, business-day membership, stale-write checks or settlement locks. Those require persisted versions and explicit day/shift references. Record IDs are not customer-facing order tokens or authentication secrets. Generate a command ID once at the initiating boundary and retain it through retries; the future coordinator must persist the original outcome and reject conflicting payload reuse. Database uniqueness constraints remain mandatory even with random IDs. This chunk changes no schema, creates no audit records and does not implement persistence or retry handling.

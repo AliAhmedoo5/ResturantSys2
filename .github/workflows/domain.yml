@@ -35,3 +35,5 @@ jobs:
         run: dart analyze --fatal-infos
       - name: Run cash-rounding regression suite
         run: dart run test/cash_rounding_test.dart
+      - name: Check command clock and record identifiers
+        run: dart run test/command_environment_test.dart

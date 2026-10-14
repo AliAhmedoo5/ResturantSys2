@@ -72,6 +72,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dart run test/cash_rounding_test.dart
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            dart run test/command_environment_test.dart
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Build release preview
         run: flutter build windows --release
       - name: Native application startup smoke check
