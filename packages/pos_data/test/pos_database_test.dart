@@ -21,7 +21,7 @@ void main() {
       final db = await PosDatabase.open(file);
       try {
         for (final entry in {
-          'user_version': 1,
+          'user_version': PosDatabase.currentSchemaVersion,
           'application_id': PosDatabase.applicationId,
           'journal_mode': 'wal',
           'foreign_keys': 1,

@@ -50,8 +50,11 @@ Future<DatabaseSnapshot> createVerifiedSnapshot(
   try {
     // This statement uses SQLite's consistent snapshot mechanism, never a copy
     // of the live main file. It intentionally fails inside an open transaction.
+    // During an upgrade, Drift's target schemaVersion is newer than the source.
+    // The backup must identify and validate the actual on-disk source version.
+    final sourceVersion = await database.customSelect('PRAGMA user_version').getSingle();
+    final schemaVersion = sourceVersion.read<int>('user_version');
     await database.customStatement('VACUUM INTO ?', [snapshotFile.path]);
-    final schemaVersion = database.schemaVersion;
     final pendingPath = pending.path;
     final result = await Isolate.run(() async {
       final stagedFile = File.fromUri(

@@ -42,7 +42,7 @@ void main() {
       );
       final checked = await PosDatabase.verifySnapshot(snapshot.directory);
       expect(checked.sha256Hex, snapshot.sha256Hex);
-      expect(checked.schemaVersion, 1);
+      expect(checked.schemaVersion, PosDatabase.currentSchemaVersion);
       expect(checked.createdAtUtc.isUtc, isTrue);
       expect(checked.appVersion, '0.2.0+2');
       final copy = sqlite3.open(
