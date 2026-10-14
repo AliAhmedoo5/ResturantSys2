@@ -21,6 +21,7 @@ class PosDatabase extends _$PosDatabase {
 
   final DatabaseWriterLease _writerLease;
   final MigrationBackup? _migrationBackup;
+  (Object, StackTrace)? _migrationFailure;
   Future<void>? _closing;
 
   /// Internal backup seam; callers must await completion before closing storage.
@@ -70,9 +71,10 @@ class PosDatabase extends _$PosDatabase {
     try {
       await database.customSelect('SELECT 1').getSingle();
       return database;
-    } catch (_) {
+    } catch (error, stack) {
       await database.close();
-      rethrow;
+      final failure = database._migrationFailure;
+      Error.throwWithStackTrace(failure?.$1 ?? error, failure?.$2 ?? stack);
     }
   }
 
@@ -100,7 +102,7 @@ class PosDatabase extends _$PosDatabase {
         await customStatement('PRAGMA application_id = $applicationId');
       });
     },
-    onUpgrade: (migrator, from, to) async {
+    onUpgrade: (migrator, from, to) => _recordMigrationFailure(() async {
       if (from != 1 || to != 2) {
         throw StateError('Unsupported database migration: $from -> $to');
       }
@@ -142,7 +144,7 @@ class PosDatabase extends _$PosDatabase {
           cause: error,
         );
       }
-    },
+    }),
     beforeOpen: (_) async {
       await customStatement('PRAGMA foreign_keys = ON');
       final identity = await customSelect(
@@ -167,6 +169,17 @@ class PosDatabase extends _$PosDatabase {
       ).get();
     },
   );
+
+  Future<void> _recordMigrationFailure(Future<void> Function() upgrade) async {
+    try {
+      await upgrade();
+    } catch (error, stack) {
+      // Drift calls this callback on the client, then wraps failures across its
+      // remote opening handshake. Keep the typed cause and archive for callers.
+      _migrationFailure = (error, stack);
+      rethrow;
+    }
+  }
 
   Future<void> _checkIntegrity() async {
     final integrity = await customSelect('PRAGMA integrity_check').get();
