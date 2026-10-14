@@ -1,0 +1,12 @@
+name: pos_security
+description: PIN verification and Windows secret protection for Crunch Cartel.
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: '>=3.11.0 <4.0.0'
+dependencies:
+  cryptography: 2.9.0
+  ffi: ^2.1.4
+  win32: 6.4.0
+dev_dependencies:
+  test: ^1.26.0
