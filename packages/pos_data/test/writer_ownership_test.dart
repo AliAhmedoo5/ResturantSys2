@@ -107,13 +107,9 @@ void main() {
 
   for (final command in ['close', 'crash']) {
     test('child process owns writer until $command', () async {
-      final dartHome = Platform.environment['DART_HOME'];
-      if (dartHome == null) throw StateError('Hosted Dart SDK path is required.');
-      final child = await Process.start('$dartHome/bin/dart.exe', [
-        'run',
-        'test/support/writer_process.dart',
-        file.path,
-      ]);
+      final helper = Platform.environment['POS_WRITER_TEST_HELPER'];
+      if (helper == null) throw StateError('Hosted test helper is required.');
+      final child = await Process.start(helper, [file.path]);
       final errors = child.stderr.transform(utf8.decoder).join();
       final output = StreamIterator(
         child.stdout.transform(utf8.decoder).transform(const LineSplitter()),

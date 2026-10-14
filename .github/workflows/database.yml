@@ -42,6 +42,13 @@ jobs:
             packages/pos_data/pubspec.lock
       - name: Analyze
         run: dart analyze --fatal-infos
+      - name: Build separate-process test helper on hosted runner
+        run: |
+          dart build cli --target=test/support/writer_process.dart --output=build/writer-helper
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $helperExecutables = @(Get-ChildItem -LiteralPath build/writer-helper -Recurse -File -Filter '*.exe')
+          if ($helperExecutables.Count -ne 1) { throw 'Expected one writer test helper executable' }
+          "POS_WRITER_TEST_HELPER=$($helperExecutables[0].FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Test file persistence and failure handling
         run: dart test --reporter expanded
       - name: Require committed formatting and generated source
