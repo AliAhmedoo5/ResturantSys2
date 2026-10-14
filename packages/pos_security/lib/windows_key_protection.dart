@@ -45,22 +45,8 @@ abstract final class WindowsKeyProtection {
       input.ref.cbData = bytes.length;
       input.ref.pbData = buffer;
       final result = encrypt
-          ? CryptProtectData(
-              input,
-              null,
-              null,
-              null,
-              _uiForbidden,
-              output,
-            )
-          : CryptUnprotectData(
-              input,
-              null,
-              null,
-              null,
-              _uiForbidden,
-              output,
-            );
+          ? CryptProtectData(input, null, null, null, _uiForbidden, output)
+          : CryptUnprotectData(input, null, null, null, _uiForbidden, output);
       if (!result.value) throw const KeyProtectionFailure();
       if (output.ref.cbData <= 0 || output.ref.cbData > 16384) {
         throw const KeyProtectionFailure();

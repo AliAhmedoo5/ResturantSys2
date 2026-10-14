@@ -23,17 +23,27 @@ final class KeyRecoveryKit {
 /// A future recovery workflow must require owner-held evidence and audit access.
 abstract final class KeyRecovery {
   static const _prefix = 'CCRK1.';
-  static final _context = utf8.encode('crunch-cartel/installation-key-recovery/v1');
+  static final _context = utf8.encode(
+    'crunch-cartel/installation-key-recovery/v1',
+  );
 
   static Future<KeyRecoveryKit> create(Uint8List installationKey) async {
-    if (installationKey.length != 32) throw ArgumentError('Invalid installation key.');
+    if (installationKey.length != 32)
+      throw ArgumentError('Invalid installation key.');
     final cipher = AesGcm.with256bits();
     final secret = await cipher.newSecretKey();
     final plaintext = Uint8List.fromList(installationKey);
     try {
-      final box = await cipher.encrypt(plaintext, secretKey: secret, aad: _context);
+      final box = await cipher.encrypt(
+        plaintext,
+        secretKey: secret,
+        aad: _context,
+      );
       final code = base64UrlEncode(await secret.extractBytes());
-      return KeyRecoveryKit._(code, '$_prefix${base64UrlEncode(box.concatenation())}');
+      return KeyRecoveryKit._(
+        code,
+        '$_prefix${base64UrlEncode(box.concatenation())}',
+      );
     } finally {
       plaintext.fillRange(0, plaintext.length, 0);
       secret.destroy();
@@ -45,7 +55,8 @@ abstract final class KeyRecovery {
     required String encryptedEnvelope,
   }) async {
     // Exact sizes bound decoding and reject version confusion before crypto work.
-    if (recoveryCode.length != 44 || encryptedEnvelope.length != _prefix.length + 80 ||
+    if (recoveryCode.length != 44 ||
+        encryptedEnvelope.length != _prefix.length + 80 ||
         !encryptedEnvelope.startsWith(_prefix)) {
       throw const KeyRecoveryFailure();
     }
@@ -63,8 +74,16 @@ abstract final class KeyRecovery {
     }
     final secret = SecretKey(key);
     try {
-      final box = SecretBox.fromConcatenation(envelope, nonceLength: 12, macLength: 16);
-      final recovered = await AesGcm.with256bits().decrypt(box, secretKey: secret, aad: _context);
+      final box = SecretBox.fromConcatenation(
+        envelope,
+        nonceLength: 12,
+        macLength: 16,
+      );
+      final recovered = await AesGcm.with256bits().decrypt(
+        box,
+        secretKey: secret,
+        aad: _context,
+      );
       if (recovered.length != 32) throw const KeyRecoveryFailure();
       return Uint8List.fromList(recovered);
     } on SecretBoxAuthenticationError {
