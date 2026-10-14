@@ -29,11 +29,13 @@ class PosDatabase extends _$PosDatabase {
   bool get isInsideTransaction => Zone.current[_transactionScope] == true;
 
   @override
-  Future<T> transaction<T>(Future<T> Function() action, {bool requireNew = false}) =>
-      super.transaction(
-        () => runZoned(action, zoneValues: {_transactionScope: true}),
-        requireNew: requireNew,
-      );
+  Future<T> transaction<T>(
+    Future<T> Function() action, {
+    bool requireNew = false,
+  }) => super.transaction(
+    () => runZoned(action, zoneValues: {_transactionScope: true}),
+    requireNew: requireNew,
+  );
 
   /// Internal backup seam; callers must await completion before closing storage.
   /// Never invoke from inside a transaction or use this as restore authorization.
@@ -137,7 +139,9 @@ class PosDatabase extends _$PosDatabase {
             "SELECT name FROM sqlite_master WHERE name IN ('idempotency_commands', 'command_versions', 'audit_events', 'audit_events_no_update', 'audit_events_no_delete', 'commands_no_update', 'commands_no_delete')",
           ).get();
           if (collisions.isNotEmpty) {
-            throw StateError('Command schema already exists in an old database.');
+            throw StateError(
+              'Command schema already exists in an old database.',
+            );
           }
           await migrator.createTable(idempotencyCommands);
           await migrator.createTable(commandVersions);
@@ -190,15 +194,22 @@ class PosDatabase extends _$PosDatabase {
       await customSelect(
         'SELECT to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256 FROM schema_upgrades LIMIT 1',
       ).get();
-      await customSelect('SELECT intent_key, kind, request_hash, result_json, created_at_utc FROM idempotency_commands LIMIT 1').get();
-      await customSelect('SELECT entity_type, entity_id, revision FROM command_versions LIMIT 1').get();
-      await customSelect('SELECT id, command_id, entity_type, entity_id, event_type, actor_id, session_id, approver_id, business_day_id, terminal_id, app_version, reason, before_json, after_json, created_at_utc FROM audit_events LIMIT 1').get();
+      await customSelect(
+        'SELECT intent_key, kind, request_hash, result_json, created_at_utc FROM idempotency_commands LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT entity_type, entity_id, revision FROM command_versions LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT id, command_id, entity_type, entity_id, event_type, actor_id, session_id, approver_id, business_day_id, terminal_id, app_version, reason, before_json, after_json, created_at_utc FROM audit_events LIMIT 1',
+      ).get();
       for (final trigger in allSchemaEntities.whereType<Trigger>()) {
         final stored = await customSelect(
           'SELECT name FROM sqlite_master WHERE type = ? AND name = ?',
           variables: [Variable('trigger'), Variable(trigger.entityName)],
         ).get();
-        if (stored.length != 1) throw StateError('Missing immutable-history guard.');
+        if (stored.length != 1)
+          throw StateError('Missing immutable-history guard.');
       }
     },
   );

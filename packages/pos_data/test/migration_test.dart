@@ -58,9 +58,17 @@ void createV2(File file) {
       );
       PRAGMA user_version = 2;
     ''');
-    old.execute('INSERT INTO schema_upgrades VALUES (?, ?, ?, ?, ?, ?)',
-      [2, 1, '2026-10-14T00:00:00.000Z', 'old-test', 'synthetic-old-backup', 'a' * 64]);
-  } finally { old.close(); }
+    old.execute('INSERT INTO schema_upgrades VALUES (?, ?, ?, ?, ?, ?)', [
+      2,
+      1,
+      '2026-10-14T00:00:00.000Z',
+      'old-test',
+      'synthetic-old-backup',
+      'a' * 64,
+    ]);
+  } finally {
+    old.close();
+  }
 }
 
 void main() {
@@ -269,33 +277,30 @@ void main() {
     expect(await backups.list().toList(), isEmpty);
   });
 
-  test(
-    'fresh and upgraded databases expose the same history schema',
-    () async {
-      createV1(file);
-      final upgraded = await PosDatabase.open(file, migrationBackup: policy());
-      final fresh = await PosDatabase.open(File('${root.path}/fresh.db'));
-      try {
-        final oldColumns = await upgraded
-            .customSelect('PRAGMA table_info(schema_upgrades)')
-            .get();
-        final newColumns = await fresh
-            .customSelect('PRAGMA table_info(schema_upgrades)')
-            .get();
-        expect(
-          oldColumns.map((row) => row.data),
-          newColumns.map((row) => row.data),
-        );
-        expect(
-          await fresh.customSelect('SELECT * FROM schema_upgrades').get(),
-          isEmpty,
-        );
-      } finally {
-        await upgraded.close();
-        await fresh.close();
-      }
-    },
-  );
+  test('fresh and upgraded databases expose the same history schema', () async {
+    createV1(file);
+    final upgraded = await PosDatabase.open(file, migrationBackup: policy());
+    final fresh = await PosDatabase.open(File('${root.path}/fresh.db'));
+    try {
+      final oldColumns = await upgraded
+          .customSelect('PRAGMA table_info(schema_upgrades)')
+          .get();
+      final newColumns = await fresh
+          .customSelect('PRAGMA table_info(schema_upgrades)')
+          .get();
+      expect(
+        oldColumns.map((row) => row.data),
+        newColumns.map((row) => row.data),
+      );
+      expect(
+        await fresh.customSelect('SELECT * FROM schema_upgrades').get(),
+        isEmpty,
+      );
+    } finally {
+      await upgraded.close();
+      await fresh.close();
+    }
+  });
 
   test(
     'current database missing migration history fails without silent repair',
@@ -311,29 +316,55 @@ void main() {
     },
   );
 
-  test('v2 upgrade preserves history and adds empty guarded command tables', () async {
-    createV2(file);
-    final db = await PosDatabase.open(file, migrationBackup: policy());
-    final fresh = await PosDatabase.open(File('${root.path}/fresh.db'));
-    try {
-      final rows = await db.customSelect('SELECT * FROM schema_upgrades ORDER BY to_version').get();
-      expect(rows.length, 2);
-      expect(rows.first.read<String>('backup_directory'), 'synthetic-old-backup');
-      expect(rows.last.read<int>('from_version'), 2);
-      expect(rows.last.read<int>('to_version'), 3);
-      final backup = await PosDatabase.verifySnapshot(Directory(rows.last.read<String>('backup_directory')));
-      expect(backup.schemaVersion, 2);
-      for (final table in ['idempotency_commands', 'command_versions', 'audit_events']) {
-        expect(await db.customSelect('SELECT * FROM $table').get(), isEmpty);
-        expect((await db.customSelect('PRAGMA table_info($table)').get()).map((r) => r.data),
-          (await fresh.customSelect('PRAGMA table_info($table)').get()).map((r) => r.data));
+  test(
+    'v2 upgrade preserves history and adds empty guarded command tables',
+    () async {
+      createV2(file);
+      final db = await PosDatabase.open(file, migrationBackup: policy());
+      final fresh = await PosDatabase.open(File('${root.path}/fresh.db'));
+      try {
+        final rows = await db
+            .customSelect('SELECT * FROM schema_upgrades ORDER BY to_version')
+            .get();
+        expect(rows.length, 2);
+        expect(
+          rows.first.read<String>('backup_directory'),
+          'synthetic-old-backup',
+        );
+        expect(rows.last.read<int>('from_version'), 2);
+        expect(rows.last.read<int>('to_version'), 3);
+        final backup = await PosDatabase.verifySnapshot(
+          Directory(rows.last.read<String>('backup_directory')),
+        );
+        expect(backup.schemaVersion, 2);
+        for (final table in [
+          'idempotency_commands',
+          'command_versions',
+          'audit_events',
+        ]) {
+          expect(await db.customSelect('SELECT * FROM $table').get(), isEmpty);
+          expect(
+            (await db.customSelect('PRAGMA table_info($table)').get()).map(
+              (r) => r.data,
+            ),
+            (await fresh.customSelect('PRAGMA table_info($table)').get()).map(
+              (r) => r.data,
+            ),
+          );
+        }
+      } finally {
+        await db.close();
+        await fresh.close();
       }
-    } finally { await db.close(); await fresh.close(); }
-  });
+    },
+  );
 
   test('v2 requires a verified backup before upgrade', () async {
     createV2(file);
-    await expectLater(PosDatabase.open(file), throwsA(isA<MigrationBackupRequiredException>()));
+    await expectLater(
+      PosDatabase.open(file),
+      throwsA(isA<MigrationBackupRequiredException>()),
+    );
     expect(version(file), 2);
   });
 
@@ -343,11 +374,20 @@ void main() {
     raw.execute('CREATE TABLE audit_events (note TEXT)');
     raw.execute("INSERT INTO audit_events VALUES ('preserve')");
     raw.close();
-    await expectLater(PosDatabase.open(file, migrationBackup: policy()), throwsA(isA<DatabaseMigrationException>()));
+    await expectLater(
+      PosDatabase.open(file, migrationBackup: policy()),
+      throwsA(isA<DatabaseMigrationException>()),
+    );
     expect(version(file), 2);
     final after = sqlite3.open(file.path, mode: OpenMode.readOnly);
-    try { expect(after.select('SELECT note FROM audit_events').single['note'], 'preserve'); }
-    finally { after.close(); }
+    try {
+      expect(
+        after.select('SELECT note FROM audit_events').single['note'],
+        'preserve',
+      );
+    } finally {
+      after.close();
+    }
     expect(await backups.list().length, 1);
   });
 
