@@ -8,7 +8,7 @@ Chunk 01 is implemented and CI-verified: delivery plan, contributor rules, initi
 
 Chunk 02 provides a CI-verified Crunch Cartel Windows design preview with black/yellow styling. See [preview download and limitations](docs/PREVIEW.md). Authentication and billing are not enabled.
 
-Chunk 03a adds the isolated `packages/pos_data` Drift/SQLite foundation. It is not yet connected to the preview. The transaction coordinator, audit/idempotency, backup-gated upgrades and platform storage integration remain pending; consult the implementation plan for exact CI evidence and remaining gates.
+Chunk 03 now includes the isolated `packages/pos_data` Drift/SQLite foundation, Windows writer ownership, verified snapshot backups and a backup-gated v1 → v2 upgrade. All 39 database tests passed in [hosted Windows CI](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38573466033). It is not yet connected to the preview. The transaction coordinator, audit/idempotency, restore orchestration and platform storage integration remain pending; consult the implementation plan for exact evidence and remaining gates.
 
 ## Development policy
 

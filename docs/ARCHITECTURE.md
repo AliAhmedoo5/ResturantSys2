@@ -32,7 +32,7 @@ Workflow syntax follows the official [Dart setup action](https://github.com/dart
 
 The opener requires an absolute file in an already provisioned local directory and rejects UNC paths. This is an internal storage foundation, not a complete deployment path policy: platform AppData discovery, ACLs and mapped-drive detection remain required before application integration. Windows writer ownership is covered by chunk 03b1 below. The preview does not yet depend on this package.
 
-No older database version has shipped. Version 1 creates only technical metadata; there are no pretend financial or account records. Unsupported migrations are rejected. Before introducing version 2, implement a validated WAL-consistent pre-migration backup hook and migration fixtures. The chapter 32.2 revision tables and nullable approver migration remain explicitly pending, alongside the coordinator and audit schema. No financial posting API is exposed in this chunk.
+Version 1 created only technical metadata; there are no pretend financial or account records. Version 2 adds technical migration history through the backup-gated path described below. Unsupported migrations are rejected. The chapter 32.2 revision tables and nullable approver migration remain explicitly pending, alongside the coordinator and audit schema. No financial posting API is exposed in this chunk.
 
 The `Database foundation` workflow generates Drift code, resolves the committed lockfile, formats, analyzes and runs temporary-file SQLite tests exclusively on hosted Windows. First generation exports a prepared-source artifact; that source and lockfile must be imported and committed before the reproducibility gate can pass. Tests use synthetic SQL fixtures created on the runner, never checked-in database binaries.
 
@@ -49,3 +49,25 @@ This prevents cooperating POS instances from creating independent writers. It is
 The coordinator remains a following subchunk. Its durable tables need a schema upgrade; implement the verified backup prerequisite before adding those tables. This change leaves schema v1 intact. Reference: [Dart Windows file-lock semantics](https://api.dart.dev/dart-io/RandomAccessFile/lock.html).
 
 The hosted workflow compiles the separate-process helper with `dart build cli` before running tests. The executable has its own native SQLite assets; launching a nested `dart run` would attempt to replace the test process''s loaded DLL on Windows. Reference: [Dart CLI build](https://dart.dev/tools/dart-build).
+
+## Verified snapshots (chunk 03c1)
+
+`PosDatabase.createSnapshot` uses SQLite `VACUUM INTO` to capture committed state including WAL pages. The live database is not copied or checkpointed as a backup shortcut. The output starts in a unique staging directory under an existing caller-provisioned local backup destination. The copy is converted to standalone DELETE journaling and checked for application identity, schema version, integrity and foreign-key consistency on a worker isolate. Its manifest includes SHA-256, byte size, UTC creation time, app version, schema version, validation state and an explicit `encrypted: false`. Business-day metadata is null until the business-day model exists.
+
+Database and flushed manifest are published together by same-parent directory rename. Failures clean only the current staging directory; a missing destination is not recreated or treated as success. A process crash can leave a `.pending-` folder, which is not a published archive. Callers must await completion before closing storage and cannot call the snapshot operation inside a transaction.
+
+`PosDatabase.verifySnapshot` checks the manifest, content hash/size, database identity, schema, full integrity and foreign keys independently in a worker isolate without modifying database contents. Checksums detect accidental corruption, not malicious replacement of both content and manifest. The archive remains unencrypted; ACL provisioning, encryption/key recovery, retention, migration gating, restore authorization and hardware power-loss testing remain future work. No customer data or database archive is committed or uploaded by CI; tests create synthetic fixtures on the hosted runner.
+
+Reference: [SQLite VACUUM INTO consistency and durability](https://www.sqlite.org/lang_vacuum.html). Version 1 business tables are unchanged. Do not equate this backup seam with verified forward migrations or production disaster recovery.
+
+## Backup-gated v1 → v2 upgrade (chunk 03c2a)
+
+`PosDatabase.open(file, migrationBackup: MigrationBackup(...))` accepts an existing, caller-provisioned local backup destination and application version. Fresh databases are created at v2; an existing v2 database needs no upgrade backup. A v1 database cannot open for use without the backup policy. Missing storage, invalid metadata and failed snapshot verification abort the upgrade without replacing the source or fabricating an archive.
+
+The existing Windows writer lease stays held across source validation, snapshot creation, independent snapshot verification, the Drift migration transaction and final opening. Source identity, integrity and foreign keys are checked before schema mutations. Snapshot metadata uses SQLite's actual `user_version`, rather than Drift's target version, so the recovery archive remains labelled v1. The only supported transition is 1 → 2.
+
+The upgrade adds `schema_upgrades` and records source/target versions, UTC timestamp, application version, archive directory and SHA-256. Table creation, history insertion, integrity verification and SQLite version advancement commit in one transaction. Drift's subsequent version write repeats the same value. A failed migration closes the database, releases the writer lease and exposes the retained archive location via `DatabaseMigrationException`; it does not automatically copy files back or destroy the original database. Existing rows are neither rewritten nor reseeded.
+
+Frozen synthetic v1 SQL fixtures are created only on Actions. Tests cover preserved signed amounts/text, source-version archives, identical fresh/upgraded history columns, missing backup configuration/destination, invalid metadata, schema conflicts, retry and missing v2 history. This subchunk does not claim hardware power-loss recovery, a restore wizard, AppData/ACL integration, or chapter 32.2 financial table migration acceptance. Those require later chunks and real schema prerequisites.
+
+References: [Drift migration transaction boundaries](https://drift.simonbinder.eu/migrations/api/), [SQLite transactional commit and rollback](https://www.sqlite.org/lang_transaction.html).

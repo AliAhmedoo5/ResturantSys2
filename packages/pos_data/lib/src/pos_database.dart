@@ -5,24 +5,54 @@ import 'package:drift/native.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite;
 
 import 'database_writer_lease.dart';
+import 'backup_snapshot.dart';
+import 'migration_backup.dart';
 
 part 'pos_database.g.dart';
 
 /// Storage foundation only. Not yet connected to the preview or business commands.
 @DriftDatabase(include: {'schema.drift'})
 class PosDatabase extends _$PosDatabase {
-  PosDatabase._(QueryExecutor executor, this._writerLease) : super(executor);
+  PosDatabase._(
+    QueryExecutor executor,
+    this._writerLease,
+    this._migrationBackup,
+  ) : super(executor);
 
   final DatabaseWriterLease _writerLease;
+  final MigrationBackup? _migrationBackup;
+  (Object, StackTrace)? _migrationFailure;
   Future<void>? _closing;
 
-  static const currentSchemaVersion = 1;
+  /// Internal backup seam; callers must await completion before closing storage.
+  /// Never invoke from inside a transaction or use this as restore authorization.
+  Future<DatabaseSnapshot> createSnapshot(
+    Directory destination, {
+    required String appVersion,
+  }) => createVerifiedSnapshot(
+    this,
+    destination,
+    appVersion: appVersion,
+    applicationId: applicationId,
+  );
+
+  static Future<DatabaseSnapshot> verifySnapshot(Directory directory) =>
+      verifyDatabaseSnapshot(
+        directory,
+        applicationId: applicationId,
+        maximumSchemaVersion: currentSchemaVersion,
+      );
+
+  static const currentSchemaVersion = 2;
   // ASCII CCRT, within SQLite's signed 32-bit application_id range.
   static const applicationId = 0x43435254;
 
   /// The caller supplies an absolute file in a provisioned local data directory.
   /// Failures are propagated; no reset, repair or in-memory fallback is attempted.
-  static Future<PosDatabase> open(File file) async {
+  static Future<PosDatabase> open(
+    File file, {
+    MigrationBackup? migrationBackup,
+  }) async {
     final lease = await DatabaseWriterLease.acquire(file);
     final PosDatabase database;
     try {
@@ -32,6 +62,7 @@ class PosDatabase extends _$PosDatabase {
           setup: _configureConnection,
         ),
         lease,
+        migrationBackup,
       );
     } catch (_) {
       await lease.release();
@@ -40,9 +71,10 @@ class PosDatabase extends _$PosDatabase {
     try {
       await database.customSelect('SELECT 1').getSingle();
       return database;
-    } catch (_) {
+    } catch (error, stack) {
       await database.close();
-      rethrow;
+      final failure = database._migrationFailure;
+      Error.throwWithStackTrace(failure?.$1 ?? error, failure?.$2 ?? stack);
     }
   }
 
@@ -70,10 +102,49 @@ class PosDatabase extends _$PosDatabase {
         await customStatement('PRAGMA application_id = $applicationId');
       });
     },
-    // There is no older released database schema. Never guess an upgrade path.
-    onUpgrade: (migrator, from, to) async {
-      throw StateError('Unsupported database migration: $from -> $to');
-    },
+    onUpgrade: (migrator, from, to) => _recordMigrationFailure(() async {
+      if (from != 1 || to != 2) {
+        throw StateError('Unsupported database migration: $from -> $to');
+      }
+      final policy = _migrationBackup;
+      if (policy == null) throw const MigrationBackupRequiredException();
+      // Drift does not wrap onUpgrade in a transaction. VACUUM INTO must finish
+      // outside it; the writer lease remains held throughout backup and upgrade.
+      final snapshot = await createSnapshot(
+        policy.directory,
+        appVersion: policy.appVersion,
+      );
+      final verified = await verifySnapshot(snapshot.directory);
+      if (verified.schemaVersion != from ||
+          verified.sha256Hex != snapshot.sha256Hex) {
+        throw StateError('Pre-migration snapshot does not match the source.');
+      }
+      try {
+        await transaction(() async {
+          await migrator.createTable(schemaUpgrades);
+          await customStatement(
+            'INSERT INTO schema_upgrades (to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256) VALUES (?, ?, ?, ?, ?, ?)',
+            [
+              to,
+              from,
+              DateTime.now().toUtc().toIso8601String(),
+              policy.appVersion,
+              verified.directory.path,
+              verified.sha256Hex,
+            ],
+          );
+          await _checkIntegrity();
+          // Persist version and schema together; Drift's later version write is
+          // idempotent. A process exit cannot leave new tables labelled v1.
+          await customStatement('PRAGMA user_version = 2');
+        });
+      } catch (error) {
+        throw DatabaseMigrationException(
+          backupDirectory: verified.directory,
+          cause: error,
+        );
+      }
+    }),
     beforeOpen: (_) async {
       await customStatement('PRAGMA foreign_keys = ON');
       final identity = await customSelect(
@@ -92,8 +163,32 @@ class PosDatabase extends _$PosDatabase {
       if ((await customSelect('PRAGMA foreign_key_check').get()).isNotEmpty) {
         throw StateError('Database foreign key check failed.');
       }
+      // Also fail closed if a v2 database has lost its technical history table.
+      await customSelect(
+        'SELECT to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256 FROM schema_upgrades LIMIT 1',
+      ).get();
     },
   );
+
+  Future<void> _recordMigrationFailure(Future<void> Function() upgrade) async {
+    try {
+      await upgrade();
+    } catch (error, stack) {
+      // Drift calls this callback on the client, then wraps failures across its
+      // remote opening handshake. Keep the typed cause and archive for callers.
+      _migrationFailure = (error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> _checkIntegrity() async {
+    final integrity = await customSelect('PRAGMA integrity_check').get();
+    if (integrity.length != 1 ||
+        integrity.single.data.values.single != 'ok' ||
+        (await customSelect('PRAGMA foreign_key_check').get()).isNotEmpty) {
+      throw StateError('Migration integrity verification failed.');
+    }
+  }
 }
 
 // Runs in the database isolate, before Drift can perform schema mutations.
@@ -108,8 +203,23 @@ void _configureConnection(sqlite.Database database) {
   final fresh = version == 0 && appId == 0 && objects.isEmpty;
   if (!fresh &&
       (appId != PosDatabase.applicationId ||
-          version != PosDatabase.currentSchemaVersion)) {
+          version < 1 ||
+          version > PosDatabase.currentSchemaVersion)) {
     throw StateError('Unsupported database identity or schema version.');
+  }
+  if (!fresh) {
+    final identity = database.select(
+      'SELECT singleton, format_tag FROM database_metadata',
+    );
+    final integrity = database.select('PRAGMA integrity_check');
+    if (identity.length != 1 ||
+        identity.single['singleton'] != 1 ||
+        identity.single['format_tag'] != 'crunch-cartel' ||
+        integrity.length != 1 ||
+        integrity.single.values.single != 'ok' ||
+        database.select('PRAGMA foreign_key_check').isNotEmpty) {
+      throw StateError('Source database validation failed before migration.');
+    }
   }
   database.execute('PRAGMA busy_timeout = 5000');
   final mode = database

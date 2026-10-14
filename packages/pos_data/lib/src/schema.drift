@@ -2,3 +2,12 @@ CREATE TABLE database_metadata (
   singleton INTEGER NOT NULL PRIMARY KEY CHECK (singleton = 1),
   format_tag TEXT NOT NULL CHECK (format_tag = 'crunch-cartel')
 );
+
+CREATE TABLE schema_upgrades (
+  to_version INTEGER NOT NULL PRIMARY KEY CHECK (to_version >= 2),
+  from_version INTEGER NOT NULL CHECK (from_version >= 1 AND from_version < to_version),
+  applied_at_utc TEXT NOT NULL,
+  app_version TEXT NOT NULL,
+  backup_directory TEXT NOT NULL,
+  backup_sha256 TEXT NOT NULL CHECK (length(backup_sha256) = 64)
+);
