@@ -4,12 +4,17 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:sqlite3/sqlite3.dart' as sqlite;
 
+import 'database_writer_lease.dart';
+
 part 'pos_database.g.dart';
 
 /// Storage foundation only. Not yet connected to the preview or business commands.
 @DriftDatabase(include: {'schema.drift'})
 class PosDatabase extends _$PosDatabase {
-  PosDatabase._(QueryExecutor executor) : super(executor);
+  PosDatabase._(QueryExecutor executor, this._writerLease) : super(executor);
+
+  final DatabaseWriterLease _writerLease;
+  Future<void>? _closing;
 
   static const currentSchemaVersion = 1;
   // ASCII CCRT, within SQLite's signed 32-bit application_id range.
@@ -18,14 +23,20 @@ class PosDatabase extends _$PosDatabase {
   /// The caller supplies an absolute file in a provisioned local data directory.
   /// Failures are propagated; no reset, repair or in-memory fallback is attempted.
   static Future<PosDatabase> open(File file) async {
-    if (!file.isAbsolute ||
-        file.path.startsWith(r'\\') ||
-        file.path.startsWith('//')) {
-      throw ArgumentError('An absolute local database file is required.');
+    final lease = await DatabaseWriterLease.acquire(file);
+    final PosDatabase database;
+    try {
+      database = PosDatabase._(
+        NativeDatabase.createInBackground(
+          lease.file,
+          setup: _configureConnection,
+        ),
+        lease,
+      );
+    } catch (_) {
+      await lease.release();
+      rethrow;
     }
-    final database = PosDatabase._(
-      NativeDatabase.createInBackground(file, setup: _configureConnection),
-    );
     try {
       await database.customSelect('SELECT 1').getSingle();
       return database;
@@ -33,6 +44,16 @@ class PosDatabase extends _$PosDatabase {
       await database.close();
       rethrow;
     }
+  }
+
+  @override
+  Future<void> close() => _closing ??= _closeWithLease();
+
+  Future<void> _closeWithLease() async {
+    // Keep ownership until SQLite and its isolate are actually closed. If closing
+    // fails, fail closed: process termination will release the OS handle.
+    await super.close();
+    await _writerLease.release();
   }
 
   @override
