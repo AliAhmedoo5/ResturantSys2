@@ -19,11 +19,22 @@ class PosDatabase extends _$PosDatabase {
 
   /// Internal backup seam; callers must await completion before closing storage.
   /// Never invoke from inside a transaction or use this as restore authorization.
-  Future<DatabaseSnapshot> createSnapshot(Directory destination, {required String appVersion}) =>
-      createVerifiedSnapshot(this, destination, appVersion: appVersion, applicationId: applicationId);
+  Future<DatabaseSnapshot> createSnapshot(
+    Directory destination, {
+    required String appVersion,
+  }) => createVerifiedSnapshot(
+    this,
+    destination,
+    appVersion: appVersion,
+    applicationId: applicationId,
+  );
 
   static Future<DatabaseSnapshot> verifySnapshot(Directory directory) =>
-      verifyDatabaseSnapshot(directory, applicationId: applicationId, maximumSchemaVersion: currentSchemaVersion);
+      verifyDatabaseSnapshot(
+        directory,
+        applicationId: applicationId,
+        maximumSchemaVersion: currentSchemaVersion,
+      );
 
   static const currentSchemaVersion = 1;
   // ASCII CCRT, within SQLite's signed 32-bit application_id range.
