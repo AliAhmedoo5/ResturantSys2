@@ -161,7 +161,7 @@ Set-Acl -LiteralPath $env:CRUNCH_TEST_PATH -AclObject $acl
     () async {
       final storage = WindowsPrivateStorage.provisionIn(parent);
       final prepared = await PreparedInstallationKey.create();
-    final store = InstallationKeyStore.privateStorage(storage);
+      final store = InstallationKeyStore.privateStorage(storage);
       await store.initialize(prepared);
       storage.verify();
       final loaded = await store.load(expectedKeyId: prepared.keyId);
