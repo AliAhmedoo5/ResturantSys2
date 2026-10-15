@@ -7,6 +7,8 @@ environment:
 dependencies:
   pos_domain:
     path: ../pos_domain
+  pos_security:
+    path: ../pos_security
   crypto: 3.0.7
   drift: 2.35.0
   sqlite3: ^3.1.0

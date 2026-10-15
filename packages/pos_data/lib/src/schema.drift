@@ -59,3 +59,66 @@ BEGIN SELECT RAISE(ABORT, 'Command results cannot be replaced'); END;
 CREATE TRIGGER audit_events_no_replace BEFORE INSERT ON audit_events
 WHEN EXISTS (SELECT 1 FROM audit_events WHERE id = NEW.id OR command_id = NEW.command_id)
 BEGIN SELECT RAISE(ABORT, 'Audit events cannot be replaced'); END;
+
+CREATE TABLE staff_credentials (
+  id TEXT NOT NULL PRIMARY KEY,
+  display_name TEXT NOT NULL CHECK (length(trim(display_name)) BETWEEN 1 AND 100),
+  role TEXT NOT NULL CHECK (role IN ('cashier', 'manager')),
+  enabled INTEGER NOT NULL CHECK (enabled IN (0, 1)),
+  revision INTEGER NOT NULL CHECK (revision >= 1),
+  pin_fingerprint TEXT NOT NULL CHECK (length(pin_fingerprint) = 44),
+  salt_base64 TEXT NOT NULL CHECK (length(salt_base64) = 24),
+  hash_base64 TEXT NOT NULL CHECK (length(hash_base64) = 44),
+  verifier_version INTEGER NOT NULL CHECK (verifier_version = 1)
+);
+CREATE UNIQUE INDEX active_pin_fingerprints ON staff_credentials(pin_fingerprint) WHERE enabled = 1;
+
+CREATE TABLE installation_security (
+  singleton INTEGER NOT NULL PRIMARY KEY CHECK (singleton = 1),
+  key_id TEXT NOT NULL CHECK (length(key_id) = 44),
+  terminal_id TEXT NOT NULL,
+  setup_intent TEXT NOT NULL UNIQUE,
+  setup_hash TEXT NOT NULL CHECK (length(setup_hash) = 64),
+  first_manager_id TEXT NOT NULL REFERENCES staff_credentials(id),
+  primary_cashier_id TEXT NOT NULL REFERENCES staff_credentials(id),
+  recovery_acknowledged_at_ms INTEGER NOT NULL CHECK (recovery_acknowledged_at_ms >= 0),
+  CHECK (first_manager_id <> primary_cashier_id)
+);
+
+CREATE TABLE auth_attempt_limits (
+  scope TEXT NOT NULL CHECK (scope IN ('device', 'account')),
+  subject_id TEXT NOT NULL,
+  window_start_ms INTEGER NOT NULL CHECK (window_start_ms >= 0),
+  last_seen_ms INTEGER NOT NULL CHECK (last_seen_ms >= window_start_ms),
+  reserved_count INTEGER NOT NULL CHECK (reserved_count >= 0),
+  PRIMARY KEY (scope, subject_id)
+);
+
+CREATE TABLE auth_sessions (
+  id TEXT NOT NULL PRIMARY KEY,
+  token_hash TEXT NOT NULL UNIQUE CHECK (length(token_hash) = 64),
+  staff_id TEXT NOT NULL REFERENCES staff_credentials(id),
+  credential_revision INTEGER NOT NULL CHECK (credential_revision >= 1),
+  role_at_issue TEXT NOT NULL CHECK (role_at_issue IN ('cashier', 'manager')),
+  terminal_id TEXT NOT NULL,
+  issued_at_ms INTEGER NOT NULL CHECK (issued_at_ms >= 0),
+  last_seen_ms INTEGER NOT NULL CHECK (last_seen_ms >= issued_at_ms),
+  expires_at_ms INTEGER NOT NULL CHECK (expires_at_ms > issued_at_ms),
+  revoked INTEGER NOT NULL CHECK (revoked IN (0, 1))
+);
+
+CREATE TABLE security_events (
+  id TEXT NOT NULL PRIMARY KEY,
+  kind TEXT NOT NULL CHECK (kind IN ('onboarding_completed', 'login_attempt_reserved', 'login_failed', 'login_succeeded', 'session_locked')),
+  staff_id TEXT REFERENCES staff_credentials(id),
+  session_id TEXT REFERENCES auth_sessions(id),
+  terminal_id TEXT NOT NULL,
+  occurred_at_ms INTEGER NOT NULL CHECK (occurred_at_ms >= 0)
+);
+CREATE TRIGGER security_events_no_update BEFORE UPDATE ON security_events
+BEGIN SELECT RAISE(ABORT, 'Security history is immutable'); END;
+CREATE TRIGGER security_events_no_delete BEFORE DELETE ON security_events
+BEGIN SELECT RAISE(ABORT, 'Security history is immutable'); END;
+CREATE TRIGGER security_events_no_replace BEFORE INSERT ON security_events
+WHEN EXISTS (SELECT 1 FROM security_events WHERE id = NEW.id)
+BEGIN SELECT RAISE(ABORT, 'Security history cannot be replaced'); END;
