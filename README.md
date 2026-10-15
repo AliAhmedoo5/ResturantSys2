@@ -10,6 +10,8 @@ Chunk 02 provides a CI-verified Crunch Cartel Windows design preview with black/
 
 Chunk 03 includes the isolated `packages/pos_data` Drift/SQLite foundation, Windows writer ownership, verified backups and backup-gated upgrades to schema v3. The command coordinator atomically saves changes, retry results, audit and version advancement. All 58 database tests passed in [hosted Windows CI](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38620443141), including concurrent retries and process exits before/after commit. It is not yet connected to the preview. Authentication integration, restore orchestration and platform storage integration remain pending; consult the implementation plan for exact evidence and remaining gates.
 
+Chunk 04 foundations include the verified two-role capability policy and the isolated `pos_security` package. Its [nine hosted security tests](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38622596760) cover Argon2id PIN verification, keyed fingerprints, native Windows DPAPI and encrypted recovery envelopes. These are internal components, not a completed login: protected key persistence, persisted lockout, credentials/sessions and first-run onboarding remain pending.
+
 ## Development policy
 
 Only file editing/inspection and repository operations happen locally. All project execution, dependency resolution, formatting, tests, generators and builds run on GitHub-hosted Actions runners. Do not install Flutter/Dart or run this project locally for development.
