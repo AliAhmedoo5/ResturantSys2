@@ -14,55 +14,89 @@ import 'windows_key_protection.dart';
 final class InstallationKeyExists implements Exception {
   const InstallationKeyExists();
   @override
-  String toString() => 'An installation key already exists and was not replaced.';
+  String toString() =>
+      'An installation key already exists and was not replaced.';
 }
 
 final class InstallationKeyInvalid implements Exception {
   const InstallationKeyInvalid();
   @override
-  String toString() => 'Installation key storage is invalid or does not match this database.';
+  String toString() =>
+      'Installation key storage is invalid or does not match this database.';
 }
 
 /// Prepare before publishing: the onboarding UI must arrange owner safekeeping
 /// and acknowledgement of the recovery code before committing the key file.
 final class PreparedInstallationKey {
-  const PreparedInstallationKey._({required this.keyId, required this.recoveryCode,
-    required this.recoveryEnvelope, required String protectedKey,
-    required String authenticationTag}) : _protectedKey = protectedKey,
-      _authenticationTag = authenticationTag;
+  const PreparedInstallationKey._({
+    required this.keyId,
+    required this.recoveryCode,
+    required this.recoveryEnvelope,
+    required String protectedKey,
+    required String authenticationTag,
+  }) : _protectedKey = protectedKey,
+       _authenticationTag = authenticationTag;
 
   final String keyId, recoveryCode, recoveryEnvelope;
   final String _protectedKey, _authenticationTag;
 
   static Future<PreparedInstallationKey> create() async {
     final random = Random.secure();
-    final key = Uint8List.fromList(List.generate(32, (_) => random.nextInt(256)));
+    final key = Uint8List.fromList(
+      List.generate(32, (_) => random.nextInt(256)),
+    );
     try {
       final recovery = await KeyRecovery.create(key);
       final id = await _identifier(key);
       final protected = base64Encode(WindowsKeyProtection.protect(key));
-      return PreparedInstallationKey._(keyId: id,
-        recoveryCode: recovery.recoveryCode, recoveryEnvelope: recovery.encryptedEnvelope,
-        protectedKey: protected, authenticationTag: await _manifestTag(key, id,
-          protected, recovery.encryptedEnvelope));
-    } finally { key.fillRange(0, key.length, 0); }
+      return PreparedInstallationKey._(
+        keyId: id,
+        recoveryCode: recovery.recoveryCode,
+        recoveryEnvelope: recovery.encryptedEnvelope,
+        protectedKey: protected,
+        authenticationTag: await _manifestTag(
+          key,
+          id,
+          protected,
+          recovery.encryptedEnvelope,
+        ),
+      );
+    } finally {
+      key.fillRange(0, key.length, 0);
+    }
   }
 
   /// Recovery requires an expected ID from the selected database. It produces a
   /// new DPAPI envelope but cannot overwrite an existing key store.
-  static Future<PreparedInstallationKey> recover({required String expectedKeyId,
-    required String recoveryCode, required String recoveryEnvelope}) async {
+  static Future<PreparedInstallationKey> recover({
+    required String expectedKeyId,
+    required String recoveryCode,
+    required String recoveryEnvelope,
+  }) async {
     _validateId(expectedKeyId);
-    final key = await KeyRecovery.recover(recoveryCode: recoveryCode,
-      encryptedEnvelope: recoveryEnvelope);
+    final key = await KeyRecovery.recover(
+      recoveryCode: recoveryCode,
+      encryptedEnvelope: recoveryEnvelope,
+    );
     try {
-      if (await _identifier(key) != expectedKeyId) throw const InstallationKeyInvalid();
+      if (await _identifier(key) != expectedKeyId)
+        throw const InstallationKeyInvalid();
       final protected = base64Encode(WindowsKeyProtection.protect(key));
-      return PreparedInstallationKey._(keyId: expectedKeyId,
-        recoveryCode: recoveryCode, recoveryEnvelope: recoveryEnvelope,
-        protectedKey: protected, authenticationTag: await _manifestTag(key,
-          expectedKeyId, protected, recoveryEnvelope));
-    } finally { key.fillRange(0, key.length, 0); }
+      return PreparedInstallationKey._(
+        keyId: expectedKeyId,
+        recoveryCode: recoveryCode,
+        recoveryEnvelope: recoveryEnvelope,
+        protectedKey: protected,
+        authenticationTag: await _manifestTag(
+          key,
+          expectedKeyId,
+          protected,
+          recoveryEnvelope,
+        ),
+      );
+    } finally {
+      key.fillRange(0, key.length, 0);
+    }
   }
 
   @override
@@ -101,24 +135,35 @@ final class InstallationKeyStore {
   Future<void> initialize(PreparedInstallationKey prepared) async {
     final canonical = await _directory();
     final destination = File.fromUri(canonical.uri.resolve(fileName));
-    if (await FileSystemEntity.type(destination.path, followLinks: false) != FileSystemEntityType.notFound) {
+    if (await FileSystemEntity.type(destination.path, followLinks: false) !=
+        FileSystemEntityType.notFound) {
       throw const InstallationKeyExists();
     }
     final pending = await canonical.createTemp('.key-pending-');
     try {
       final staged = File.fromUri(pending.uri.resolve(fileName));
-      await staged.writeAsString(jsonEncode({
-        'formatVersion': 1, 'keyId': prepared.keyId,
-        'protectedKey': prepared._protectedKey,
-        'recoveryEnvelope': prepared.recoveryEnvelope,
-        'authenticationTag': prepared._authenticationTag,
-      }), flush: true);
+      await staged.writeAsString(
+        jsonEncode({
+          'formatVersion': 1,
+          'keyId': prepared.keyId,
+          'protectedKey': prepared._protectedKey,
+          'recoveryEnvelope': prepared.recoveryEnvelope,
+          'authenticationTag': prepared._authenticationTag,
+        }),
+        flush: true,
+      );
       // Same-volume publication, explicitly WITHOUT REPLACE_EXISTING. Dart's
       // File.rename can overwrite a destination and is not suitable here.
-      final published = using((arena) => MoveFileEx(arena.pcwstr(staged.path),
-        arena.pcwstr(destination.path), const MOVE_FILE_FLAGS(8)).value);
+      final published = using(
+        (arena) => MoveFileEx(
+          arena.pcwstr(staged.path),
+          arena.pcwstr(destination.path),
+          const MOVE_FILE_FLAGS(8),
+        ).value,
+      );
       if (!published) {
-        if (await FileSystemEntity.type(destination.path, followLinks: false) != FileSystemEntityType.notFound) {
+        if (await FileSystemEntity.type(destination.path, followLinks: false) !=
+            FileSystemEntityType.notFound) {
           throw const InstallationKeyExists();
         }
         throw const FileSystemException('Installation-key publication failed.');
@@ -146,9 +191,12 @@ final class InstallationKeyStore {
     Uint8List protected;
     try {
       final decoded = jsonDecode(await file.readAsString());
-      if (decoded is! Map<String, dynamic> || decoded.length != 5 ||
-          decoded['formatVersion'] != 1 || decoded['keyId'] != expectedKeyId ||
-          decoded['protectedKey'] is! String || decoded['recoveryEnvelope'] is! String ||
+      if (decoded is! Map<String, dynamic> ||
+          decoded.length != 5 ||
+          decoded['formatVersion'] != 1 ||
+          decoded['keyId'] != expectedKeyId ||
+          decoded['protectedKey'] is! String ||
+          decoded['recoveryEnvelope'] is! String ||
           decoded['authenticationTag'] is! String ||
           (decoded['authenticationTag'] as String).length != 44 ||
           (decoded['recoveryEnvelope'] as String).length != 86 ||
@@ -157,12 +205,19 @@ final class InstallationKeyStore {
       }
       data = decoded;
       protected = base64Decode(data['protectedKey'] as String);
-    } on FormatException { throw const InstallationKeyInvalid(); }
+    } on FormatException {
+      throw const InstallationKeyInvalid();
+    }
     final key = WindowsKeyProtection.unprotect(protected);
     try {
-      if (await _identifier(key) != expectedKeyId) throw const InstallationKeyInvalid();
-      final actualTag = await _manifestTag(key, expectedKeyId,
-        data['protectedKey'] as String, data['recoveryEnvelope'] as String);
+      if (await _identifier(key) != expectedKeyId)
+        throw const InstallationKeyInvalid();
+      final actualTag = await _manifestTag(
+        key,
+        expectedKeyId,
+        data['protectedKey'] as String,
+        data['recoveryEnvelope'] as String,
+      );
       final expectedTag = data['authenticationTag'] as String;
       var difference = 0;
       for (var i = 0; i < 44; i++) {
@@ -170,16 +225,23 @@ final class InstallationKeyStore {
       }
       if (difference != 0) throw const InstallationKeyInvalid();
       return LoadedInstallationKey._(expectedKeyId, key);
-    } catch (_) { key.fillRange(0, key.length, 0); rethrow; }
+    } catch (_) {
+      key.fillRange(0, key.length, 0);
+      rethrow;
+    }
   }
 
   Future<Directory> _directory() async {
-    if (!Platform.isWindows) throw UnsupportedError('Windows key storage is required.');
+    if (!Platform.isWindows)
+      throw UnsupportedError('Windows key storage is required.');
     void validate(Directory value) {
-      if (!value.isAbsolute || value.path.startsWith(r'\\') || value.path.startsWith('//')) {
+      if (!value.isAbsolute ||
+          value.path.startsWith(r'\\') ||
+          value.path.startsWith('//')) {
         throw ArgumentError('An absolute local key directory is required.');
       }
     }
+
     validate(directory);
     final canonical = Directory(await directory.resolveSymbolicLinks());
     validate(canonical);
@@ -187,20 +249,32 @@ final class InstallationKeyStore {
   }
 }
 
-Future<String> _identifier(Uint8List key) async => base64UrlEncode((await Sha256().hash(key)).bytes);
+Future<String> _identifier(Uint8List key) async =>
+    base64UrlEncode((await Sha256().hash(key)).bytes);
 
-Future<String> _manifestTag(Uint8List key, String id, String protected,
-    String recovery) async {
+Future<String> _manifestTag(
+  Uint8List key,
+  String id,
+  String protected,
+  String recovery,
+) async {
   final secret = SecretKey(List<int>.from(key));
   try {
     final mac = await Hmac.sha256().calculateMac(
-      utf8.encode('crunch-cartel/key-file/v1:$id:$protected:$recovery'), secretKey: secret);
+      utf8.encode('crunch-cartel/key-file/v1:$id:$protected:$recovery'),
+      secretKey: secret,
+    );
     return base64Encode(mac.bytes);
-  } finally { secret.destroy(); }
+  } finally {
+    secret.destroy();
+  }
 }
 
 void _validateId(String id) {
   try {
-    if (id.length != 44 || base64Url.decode(id).length != 32) throw const FormatException();
-  } on FormatException { throw const InstallationKeyInvalid(); }
+    if (id.length != 44 || base64Url.decode(id).length != 32)
+      throw const FormatException();
+  } on FormatException {
+    throw const InstallationKeyInvalid();
+  }
 }
