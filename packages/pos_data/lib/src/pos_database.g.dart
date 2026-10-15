@@ -2181,6 +2181,2582 @@ class AuditEventsCompanion extends UpdateCompanion<AuditEvent> {
   }
 }
 
+class StaffCredentials extends Table
+    with TableInfo<StaffCredentials, StaffCredential> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  StaffCredentials(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL PRIMARY KEY',
+  );
+  static const VerificationMeta _displayNameMeta = const VerificationMeta(
+    'displayName',
+  );
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+    'display_name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints:
+        'NOT NULL CHECK (length(trim(display_name)) BETWEEN 1 AND 100)',
+  );
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+    'role',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (role IN (\'cashier\', \'manager\'))',
+  );
+  static const VerificationMeta _enabledMeta = const VerificationMeta(
+    'enabled',
+  );
+  late final GeneratedColumn<int> enabled = GeneratedColumn<int>(
+    'enabled',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (enabled IN (0, 1))',
+  );
+  static const VerificationMeta _revisionMeta = const VerificationMeta(
+    'revision',
+  );
+  late final GeneratedColumn<int> revision = GeneratedColumn<int>(
+    'revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (revision >= 1)',
+  );
+  static const VerificationMeta _pinFingerprintMeta = const VerificationMeta(
+    'pinFingerprint',
+  );
+  late final GeneratedColumn<String> pinFingerprint = GeneratedColumn<String>(
+    'pin_fingerprint',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (length(pin_fingerprint) = 44)',
+  );
+  static const VerificationMeta _saltBase64Meta = const VerificationMeta(
+    'saltBase64',
+  );
+  late final GeneratedColumn<String> saltBase64 = GeneratedColumn<String>(
+    'salt_base64',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (length(salt_base64) = 24)',
+  );
+  static const VerificationMeta _hashBase64Meta = const VerificationMeta(
+    'hashBase64',
+  );
+  late final GeneratedColumn<String> hashBase64 = GeneratedColumn<String>(
+    'hash_base64',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (length(hash_base64) = 44)',
+  );
+  static const VerificationMeta _verifierVersionMeta = const VerificationMeta(
+    'verifierVersion',
+  );
+  late final GeneratedColumn<int> verifierVersion = GeneratedColumn<int>(
+    'verifier_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (verifier_version = 1)',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    displayName,
+    role,
+    enabled,
+    revision,
+    pinFingerprint,
+    saltBase64,
+    hashBase64,
+    verifierVersion,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'staff_credentials';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<StaffCredential> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+        _displayNameMeta,
+        displayName.isAcceptableOrUnknown(
+          data['display_name']!,
+          _displayNameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_displayNameMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+        _roleMeta,
+        role.isAcceptableOrUnknown(data['role']!, _roleMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('enabled')) {
+      context.handle(
+        _enabledMeta,
+        enabled.isAcceptableOrUnknown(data['enabled']!, _enabledMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_enabledMeta);
+    }
+    if (data.containsKey('revision')) {
+      context.handle(
+        _revisionMeta,
+        revision.isAcceptableOrUnknown(data['revision']!, _revisionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_revisionMeta);
+    }
+    if (data.containsKey('pin_fingerprint')) {
+      context.handle(
+        _pinFingerprintMeta,
+        pinFingerprint.isAcceptableOrUnknown(
+          data['pin_fingerprint']!,
+          _pinFingerprintMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_pinFingerprintMeta);
+    }
+    if (data.containsKey('salt_base64')) {
+      context.handle(
+        _saltBase64Meta,
+        saltBase64.isAcceptableOrUnknown(data['salt_base64']!, _saltBase64Meta),
+      );
+    } else if (isInserting) {
+      context.missing(_saltBase64Meta);
+    }
+    if (data.containsKey('hash_base64')) {
+      context.handle(
+        _hashBase64Meta,
+        hashBase64.isAcceptableOrUnknown(data['hash_base64']!, _hashBase64Meta),
+      );
+    } else if (isInserting) {
+      context.missing(_hashBase64Meta);
+    }
+    if (data.containsKey('verifier_version')) {
+      context.handle(
+        _verifierVersionMeta,
+        verifierVersion.isAcceptableOrUnknown(
+          data['verifier_version']!,
+          _verifierVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_verifierVersionMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  StaffCredential map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return StaffCredential(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      displayName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}display_name'],
+      )!,
+      role: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role'],
+      )!,
+      enabled: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}enabled'],
+      )!,
+      revision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revision'],
+      )!,
+      pinFingerprint: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pin_fingerprint'],
+      )!,
+      saltBase64: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}salt_base64'],
+      )!,
+      hashBase64: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hash_base64'],
+      )!,
+      verifierVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}verifier_version'],
+      )!,
+    );
+  }
+
+  @override
+  StaffCredentials createAlias(String alias) {
+    return StaffCredentials(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class StaffCredential extends DataClass implements Insertable<StaffCredential> {
+  final String id;
+  final String displayName;
+  final String role;
+  final int enabled;
+  final int revision;
+  final String pinFingerprint;
+  final String saltBase64;
+  final String hashBase64;
+  final int verifierVersion;
+  const StaffCredential({
+    required this.id,
+    required this.displayName,
+    required this.role,
+    required this.enabled,
+    required this.revision,
+    required this.pinFingerprint,
+    required this.saltBase64,
+    required this.hashBase64,
+    required this.verifierVersion,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['display_name'] = Variable<String>(displayName);
+    map['role'] = Variable<String>(role);
+    map['enabled'] = Variable<int>(enabled);
+    map['revision'] = Variable<int>(revision);
+    map['pin_fingerprint'] = Variable<String>(pinFingerprint);
+    map['salt_base64'] = Variable<String>(saltBase64);
+    map['hash_base64'] = Variable<String>(hashBase64);
+    map['verifier_version'] = Variable<int>(verifierVersion);
+    return map;
+  }
+
+  StaffCredentialsCompanion toCompanion(bool nullToAbsent) {
+    return StaffCredentialsCompanion(
+      id: Value(id),
+      displayName: Value(displayName),
+      role: Value(role),
+      enabled: Value(enabled),
+      revision: Value(revision),
+      pinFingerprint: Value(pinFingerprint),
+      saltBase64: Value(saltBase64),
+      hashBase64: Value(hashBase64),
+      verifierVersion: Value(verifierVersion),
+    );
+  }
+
+  factory StaffCredential.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return StaffCredential(
+      id: serializer.fromJson<String>(json['id']),
+      displayName: serializer.fromJson<String>(json['display_name']),
+      role: serializer.fromJson<String>(json['role']),
+      enabled: serializer.fromJson<int>(json['enabled']),
+      revision: serializer.fromJson<int>(json['revision']),
+      pinFingerprint: serializer.fromJson<String>(json['pin_fingerprint']),
+      saltBase64: serializer.fromJson<String>(json['salt_base64']),
+      hashBase64: serializer.fromJson<String>(json['hash_base64']),
+      verifierVersion: serializer.fromJson<int>(json['verifier_version']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'display_name': serializer.toJson<String>(displayName),
+      'role': serializer.toJson<String>(role),
+      'enabled': serializer.toJson<int>(enabled),
+      'revision': serializer.toJson<int>(revision),
+      'pin_fingerprint': serializer.toJson<String>(pinFingerprint),
+      'salt_base64': serializer.toJson<String>(saltBase64),
+      'hash_base64': serializer.toJson<String>(hashBase64),
+      'verifier_version': serializer.toJson<int>(verifierVersion),
+    };
+  }
+
+  StaffCredential copyWith({
+    String? id,
+    String? displayName,
+    String? role,
+    int? enabled,
+    int? revision,
+    String? pinFingerprint,
+    String? saltBase64,
+    String? hashBase64,
+    int? verifierVersion,
+  }) => StaffCredential(
+    id: id ?? this.id,
+    displayName: displayName ?? this.displayName,
+    role: role ?? this.role,
+    enabled: enabled ?? this.enabled,
+    revision: revision ?? this.revision,
+    pinFingerprint: pinFingerprint ?? this.pinFingerprint,
+    saltBase64: saltBase64 ?? this.saltBase64,
+    hashBase64: hashBase64 ?? this.hashBase64,
+    verifierVersion: verifierVersion ?? this.verifierVersion,
+  );
+  StaffCredential copyWithCompanion(StaffCredentialsCompanion data) {
+    return StaffCredential(
+      id: data.id.present ? data.id.value : this.id,
+      displayName: data.displayName.present
+          ? data.displayName.value
+          : this.displayName,
+      role: data.role.present ? data.role.value : this.role,
+      enabled: data.enabled.present ? data.enabled.value : this.enabled,
+      revision: data.revision.present ? data.revision.value : this.revision,
+      pinFingerprint: data.pinFingerprint.present
+          ? data.pinFingerprint.value
+          : this.pinFingerprint,
+      saltBase64: data.saltBase64.present
+          ? data.saltBase64.value
+          : this.saltBase64,
+      hashBase64: data.hashBase64.present
+          ? data.hashBase64.value
+          : this.hashBase64,
+      verifierVersion: data.verifierVersion.present
+          ? data.verifierVersion.value
+          : this.verifierVersion,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StaffCredential(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('role: $role, ')
+          ..write('enabled: $enabled, ')
+          ..write('revision: $revision, ')
+          ..write('pinFingerprint: $pinFingerprint, ')
+          ..write('saltBase64: $saltBase64, ')
+          ..write('hashBase64: $hashBase64, ')
+          ..write('verifierVersion: $verifierVersion')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    displayName,
+    role,
+    enabled,
+    revision,
+    pinFingerprint,
+    saltBase64,
+    hashBase64,
+    verifierVersion,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is StaffCredential &&
+          other.id == this.id &&
+          other.displayName == this.displayName &&
+          other.role == this.role &&
+          other.enabled == this.enabled &&
+          other.revision == this.revision &&
+          other.pinFingerprint == this.pinFingerprint &&
+          other.saltBase64 == this.saltBase64 &&
+          other.hashBase64 == this.hashBase64 &&
+          other.verifierVersion == this.verifierVersion);
+}
+
+class StaffCredentialsCompanion extends UpdateCompanion<StaffCredential> {
+  final Value<String> id;
+  final Value<String> displayName;
+  final Value<String> role;
+  final Value<int> enabled;
+  final Value<int> revision;
+  final Value<String> pinFingerprint;
+  final Value<String> saltBase64;
+  final Value<String> hashBase64;
+  final Value<int> verifierVersion;
+  final Value<int> rowid;
+  const StaffCredentialsCompanion({
+    this.id = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.role = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.revision = const Value.absent(),
+    this.pinFingerprint = const Value.absent(),
+    this.saltBase64 = const Value.absent(),
+    this.hashBase64 = const Value.absent(),
+    this.verifierVersion = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  StaffCredentialsCompanion.insert({
+    required String id,
+    required String displayName,
+    required String role,
+    required int enabled,
+    required int revision,
+    required String pinFingerprint,
+    required String saltBase64,
+    required String hashBase64,
+    required int verifierVersion,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       displayName = Value(displayName),
+       role = Value(role),
+       enabled = Value(enabled),
+       revision = Value(revision),
+       pinFingerprint = Value(pinFingerprint),
+       saltBase64 = Value(saltBase64),
+       hashBase64 = Value(hashBase64),
+       verifierVersion = Value(verifierVersion);
+  static Insertable<StaffCredential> custom({
+    Expression<String>? id,
+    Expression<String>? displayName,
+    Expression<String>? role,
+    Expression<int>? enabled,
+    Expression<int>? revision,
+    Expression<String>? pinFingerprint,
+    Expression<String>? saltBase64,
+    Expression<String>? hashBase64,
+    Expression<int>? verifierVersion,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (displayName != null) 'display_name': displayName,
+      if (role != null) 'role': role,
+      if (enabled != null) 'enabled': enabled,
+      if (revision != null) 'revision': revision,
+      if (pinFingerprint != null) 'pin_fingerprint': pinFingerprint,
+      if (saltBase64 != null) 'salt_base64': saltBase64,
+      if (hashBase64 != null) 'hash_base64': hashBase64,
+      if (verifierVersion != null) 'verifier_version': verifierVersion,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  StaffCredentialsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? displayName,
+    Value<String>? role,
+    Value<int>? enabled,
+    Value<int>? revision,
+    Value<String>? pinFingerprint,
+    Value<String>? saltBase64,
+    Value<String>? hashBase64,
+    Value<int>? verifierVersion,
+    Value<int>? rowid,
+  }) {
+    return StaffCredentialsCompanion(
+      id: id ?? this.id,
+      displayName: displayName ?? this.displayName,
+      role: role ?? this.role,
+      enabled: enabled ?? this.enabled,
+      revision: revision ?? this.revision,
+      pinFingerprint: pinFingerprint ?? this.pinFingerprint,
+      saltBase64: saltBase64 ?? this.saltBase64,
+      hashBase64: hashBase64 ?? this.hashBase64,
+      verifierVersion: verifierVersion ?? this.verifierVersion,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (enabled.present) {
+      map['enabled'] = Variable<int>(enabled.value);
+    }
+    if (revision.present) {
+      map['revision'] = Variable<int>(revision.value);
+    }
+    if (pinFingerprint.present) {
+      map['pin_fingerprint'] = Variable<String>(pinFingerprint.value);
+    }
+    if (saltBase64.present) {
+      map['salt_base64'] = Variable<String>(saltBase64.value);
+    }
+    if (hashBase64.present) {
+      map['hash_base64'] = Variable<String>(hashBase64.value);
+    }
+    if (verifierVersion.present) {
+      map['verifier_version'] = Variable<int>(verifierVersion.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('StaffCredentialsCompanion(')
+          ..write('id: $id, ')
+          ..write('displayName: $displayName, ')
+          ..write('role: $role, ')
+          ..write('enabled: $enabled, ')
+          ..write('revision: $revision, ')
+          ..write('pinFingerprint: $pinFingerprint, ')
+          ..write('saltBase64: $saltBase64, ')
+          ..write('hashBase64: $hashBase64, ')
+          ..write('verifierVersion: $verifierVersion, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class InstallationSecurity extends Table
+    with TableInfo<InstallationSecurity, InstallationSecurityData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  InstallationSecurity(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _singletonMeta = const VerificationMeta(
+    'singleton',
+  );
+  late final GeneratedColumn<int> singleton = GeneratedColumn<int>(
+    'singleton',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL PRIMARY KEY CHECK (singleton = 1)',
+  );
+  static const VerificationMeta _keyIdMeta = const VerificationMeta('keyId');
+  late final GeneratedColumn<String> keyId = GeneratedColumn<String>(
+    'key_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (length(key_id) = 44)',
+  );
+  static const VerificationMeta _terminalIdMeta = const VerificationMeta(
+    'terminalId',
+  );
+  late final GeneratedColumn<String> terminalId = GeneratedColumn<String>(
+    'terminal_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _setupIntentMeta = const VerificationMeta(
+    'setupIntent',
+  );
+  late final GeneratedColumn<String> setupIntent = GeneratedColumn<String>(
+    'setup_intent',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL UNIQUE',
+  );
+  static const VerificationMeta _setupHashMeta = const VerificationMeta(
+    'setupHash',
+  );
+  late final GeneratedColumn<String> setupHash = GeneratedColumn<String>(
+    'setup_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (length(setup_hash) = 64)',
+  );
+  static const VerificationMeta _firstManagerIdMeta = const VerificationMeta(
+    'firstManagerId',
+  );
+  late final GeneratedColumn<String> firstManagerId = GeneratedColumn<String>(
+    'first_manager_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL REFERENCES staff_credentials(id)',
+  );
+  static const VerificationMeta _primaryCashierIdMeta = const VerificationMeta(
+    'primaryCashierId',
+  );
+  late final GeneratedColumn<String> primaryCashierId = GeneratedColumn<String>(
+    'primary_cashier_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL REFERENCES staff_credentials(id)',
+  );
+  static const VerificationMeta _recoveryAcknowledgedAtMsMeta =
+      const VerificationMeta('recoveryAcknowledgedAtMs');
+  late final GeneratedColumn<int> recoveryAcknowledgedAtMs =
+      GeneratedColumn<int>(
+        'recovery_acknowledged_at_ms',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+        $customConstraints: 'NOT NULL CHECK (recovery_acknowledged_at_ms >= 0)',
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    singleton,
+    keyId,
+    terminalId,
+    setupIntent,
+    setupHash,
+    firstManagerId,
+    primaryCashierId,
+    recoveryAcknowledgedAtMs,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'installation_security';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<InstallationSecurityData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('singleton')) {
+      context.handle(
+        _singletonMeta,
+        singleton.isAcceptableOrUnknown(data['singleton']!, _singletonMeta),
+      );
+    }
+    if (data.containsKey('key_id')) {
+      context.handle(
+        _keyIdMeta,
+        keyId.isAcceptableOrUnknown(data['key_id']!, _keyIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_keyIdMeta);
+    }
+    if (data.containsKey('terminal_id')) {
+      context.handle(
+        _terminalIdMeta,
+        terminalId.isAcceptableOrUnknown(data['terminal_id']!, _terminalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_terminalIdMeta);
+    }
+    if (data.containsKey('setup_intent')) {
+      context.handle(
+        _setupIntentMeta,
+        setupIntent.isAcceptableOrUnknown(
+          data['setup_intent']!,
+          _setupIntentMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_setupIntentMeta);
+    }
+    if (data.containsKey('setup_hash')) {
+      context.handle(
+        _setupHashMeta,
+        setupHash.isAcceptableOrUnknown(data['setup_hash']!, _setupHashMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_setupHashMeta);
+    }
+    if (data.containsKey('first_manager_id')) {
+      context.handle(
+        _firstManagerIdMeta,
+        firstManagerId.isAcceptableOrUnknown(
+          data['first_manager_id']!,
+          _firstManagerIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_firstManagerIdMeta);
+    }
+    if (data.containsKey('primary_cashier_id')) {
+      context.handle(
+        _primaryCashierIdMeta,
+        primaryCashierId.isAcceptableOrUnknown(
+          data['primary_cashier_id']!,
+          _primaryCashierIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_primaryCashierIdMeta);
+    }
+    if (data.containsKey('recovery_acknowledged_at_ms')) {
+      context.handle(
+        _recoveryAcknowledgedAtMsMeta,
+        recoveryAcknowledgedAtMs.isAcceptableOrUnknown(
+          data['recovery_acknowledged_at_ms']!,
+          _recoveryAcknowledgedAtMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_recoveryAcknowledgedAtMsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {singleton};
+  @override
+  InstallationSecurityData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return InstallationSecurityData(
+      singleton: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}singleton'],
+      )!,
+      keyId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}key_id'],
+      )!,
+      terminalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}terminal_id'],
+      )!,
+      setupIntent: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}setup_intent'],
+      )!,
+      setupHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}setup_hash'],
+      )!,
+      firstManagerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}first_manager_id'],
+      )!,
+      primaryCashierId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}primary_cashier_id'],
+      )!,
+      recoveryAcknowledgedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recovery_acknowledged_at_ms'],
+      )!,
+    );
+  }
+
+  @override
+  InstallationSecurity createAlias(String alias) {
+    return InstallationSecurity(attachedDatabase, alias);
+  }
+
+  @override
+  List<String> get customConstraints => const [
+    'CHECK(first_manager_id <> primary_cashier_id)',
+  ];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class InstallationSecurityData extends DataClass
+    implements Insertable<InstallationSecurityData> {
+  final int singleton;
+  final String keyId;
+  final String terminalId;
+  final String setupIntent;
+  final String setupHash;
+  final String firstManagerId;
+  final String primaryCashierId;
+  final int recoveryAcknowledgedAtMs;
+  const InstallationSecurityData({
+    required this.singleton,
+    required this.keyId,
+    required this.terminalId,
+    required this.setupIntent,
+    required this.setupHash,
+    required this.firstManagerId,
+    required this.primaryCashierId,
+    required this.recoveryAcknowledgedAtMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['singleton'] = Variable<int>(singleton);
+    map['key_id'] = Variable<String>(keyId);
+    map['terminal_id'] = Variable<String>(terminalId);
+    map['setup_intent'] = Variable<String>(setupIntent);
+    map['setup_hash'] = Variable<String>(setupHash);
+    map['first_manager_id'] = Variable<String>(firstManagerId);
+    map['primary_cashier_id'] = Variable<String>(primaryCashierId);
+    map['recovery_acknowledged_at_ms'] = Variable<int>(
+      recoveryAcknowledgedAtMs,
+    );
+    return map;
+  }
+
+  InstallationSecurityCompanion toCompanion(bool nullToAbsent) {
+    return InstallationSecurityCompanion(
+      singleton: Value(singleton),
+      keyId: Value(keyId),
+      terminalId: Value(terminalId),
+      setupIntent: Value(setupIntent),
+      setupHash: Value(setupHash),
+      firstManagerId: Value(firstManagerId),
+      primaryCashierId: Value(primaryCashierId),
+      recoveryAcknowledgedAtMs: Value(recoveryAcknowledgedAtMs),
+    );
+  }
+
+  factory InstallationSecurityData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return InstallationSecurityData(
+      singleton: serializer.fromJson<int>(json['singleton']),
+      keyId: serializer.fromJson<String>(json['key_id']),
+      terminalId: serializer.fromJson<String>(json['terminal_id']),
+      setupIntent: serializer.fromJson<String>(json['setup_intent']),
+      setupHash: serializer.fromJson<String>(json['setup_hash']),
+      firstManagerId: serializer.fromJson<String>(json['first_manager_id']),
+      primaryCashierId: serializer.fromJson<String>(json['primary_cashier_id']),
+      recoveryAcknowledgedAtMs: serializer.fromJson<int>(
+        json['recovery_acknowledged_at_ms'],
+      ),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'singleton': serializer.toJson<int>(singleton),
+      'key_id': serializer.toJson<String>(keyId),
+      'terminal_id': serializer.toJson<String>(terminalId),
+      'setup_intent': serializer.toJson<String>(setupIntent),
+      'setup_hash': serializer.toJson<String>(setupHash),
+      'first_manager_id': serializer.toJson<String>(firstManagerId),
+      'primary_cashier_id': serializer.toJson<String>(primaryCashierId),
+      'recovery_acknowledged_at_ms': serializer.toJson<int>(
+        recoveryAcknowledgedAtMs,
+      ),
+    };
+  }
+
+  InstallationSecurityData copyWith({
+    int? singleton,
+    String? keyId,
+    String? terminalId,
+    String? setupIntent,
+    String? setupHash,
+    String? firstManagerId,
+    String? primaryCashierId,
+    int? recoveryAcknowledgedAtMs,
+  }) => InstallationSecurityData(
+    singleton: singleton ?? this.singleton,
+    keyId: keyId ?? this.keyId,
+    terminalId: terminalId ?? this.terminalId,
+    setupIntent: setupIntent ?? this.setupIntent,
+    setupHash: setupHash ?? this.setupHash,
+    firstManagerId: firstManagerId ?? this.firstManagerId,
+    primaryCashierId: primaryCashierId ?? this.primaryCashierId,
+    recoveryAcknowledgedAtMs:
+        recoveryAcknowledgedAtMs ?? this.recoveryAcknowledgedAtMs,
+  );
+  InstallationSecurityData copyWithCompanion(
+    InstallationSecurityCompanion data,
+  ) {
+    return InstallationSecurityData(
+      singleton: data.singleton.present ? data.singleton.value : this.singleton,
+      keyId: data.keyId.present ? data.keyId.value : this.keyId,
+      terminalId: data.terminalId.present
+          ? data.terminalId.value
+          : this.terminalId,
+      setupIntent: data.setupIntent.present
+          ? data.setupIntent.value
+          : this.setupIntent,
+      setupHash: data.setupHash.present ? data.setupHash.value : this.setupHash,
+      firstManagerId: data.firstManagerId.present
+          ? data.firstManagerId.value
+          : this.firstManagerId,
+      primaryCashierId: data.primaryCashierId.present
+          ? data.primaryCashierId.value
+          : this.primaryCashierId,
+      recoveryAcknowledgedAtMs: data.recoveryAcknowledgedAtMs.present
+          ? data.recoveryAcknowledgedAtMs.value
+          : this.recoveryAcknowledgedAtMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InstallationSecurityData(')
+          ..write('singleton: $singleton, ')
+          ..write('keyId: $keyId, ')
+          ..write('terminalId: $terminalId, ')
+          ..write('setupIntent: $setupIntent, ')
+          ..write('setupHash: $setupHash, ')
+          ..write('firstManagerId: $firstManagerId, ')
+          ..write('primaryCashierId: $primaryCashierId, ')
+          ..write('recoveryAcknowledgedAtMs: $recoveryAcknowledgedAtMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    singleton,
+    keyId,
+    terminalId,
+    setupIntent,
+    setupHash,
+    firstManagerId,
+    primaryCashierId,
+    recoveryAcknowledgedAtMs,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is InstallationSecurityData &&
+          other.singleton == this.singleton &&
+          other.keyId == this.keyId &&
+          other.terminalId == this.terminalId &&
+          other.setupIntent == this.setupIntent &&
+          other.setupHash == this.setupHash &&
+          other.firstManagerId == this.firstManagerId &&
+          other.primaryCashierId == this.primaryCashierId &&
+          other.recoveryAcknowledgedAtMs == this.recoveryAcknowledgedAtMs);
+}
+
+class InstallationSecurityCompanion
+    extends UpdateCompanion<InstallationSecurityData> {
+  final Value<int> singleton;
+  final Value<String> keyId;
+  final Value<String> terminalId;
+  final Value<String> setupIntent;
+  final Value<String> setupHash;
+  final Value<String> firstManagerId;
+  final Value<String> primaryCashierId;
+  final Value<int> recoveryAcknowledgedAtMs;
+  const InstallationSecurityCompanion({
+    this.singleton = const Value.absent(),
+    this.keyId = const Value.absent(),
+    this.terminalId = const Value.absent(),
+    this.setupIntent = const Value.absent(),
+    this.setupHash = const Value.absent(),
+    this.firstManagerId = const Value.absent(),
+    this.primaryCashierId = const Value.absent(),
+    this.recoveryAcknowledgedAtMs = const Value.absent(),
+  });
+  InstallationSecurityCompanion.insert({
+    this.singleton = const Value.absent(),
+    required String keyId,
+    required String terminalId,
+    required String setupIntent,
+    required String setupHash,
+    required String firstManagerId,
+    required String primaryCashierId,
+    required int recoveryAcknowledgedAtMs,
+  }) : keyId = Value(keyId),
+       terminalId = Value(terminalId),
+       setupIntent = Value(setupIntent),
+       setupHash = Value(setupHash),
+       firstManagerId = Value(firstManagerId),
+       primaryCashierId = Value(primaryCashierId),
+       recoveryAcknowledgedAtMs = Value(recoveryAcknowledgedAtMs);
+  static Insertable<InstallationSecurityData> custom({
+    Expression<int>? singleton,
+    Expression<String>? keyId,
+    Expression<String>? terminalId,
+    Expression<String>? setupIntent,
+    Expression<String>? setupHash,
+    Expression<String>? firstManagerId,
+    Expression<String>? primaryCashierId,
+    Expression<int>? recoveryAcknowledgedAtMs,
+  }) {
+    return RawValuesInsertable({
+      if (singleton != null) 'singleton': singleton,
+      if (keyId != null) 'key_id': keyId,
+      if (terminalId != null) 'terminal_id': terminalId,
+      if (setupIntent != null) 'setup_intent': setupIntent,
+      if (setupHash != null) 'setup_hash': setupHash,
+      if (firstManagerId != null) 'first_manager_id': firstManagerId,
+      if (primaryCashierId != null) 'primary_cashier_id': primaryCashierId,
+      if (recoveryAcknowledgedAtMs != null)
+        'recovery_acknowledged_at_ms': recoveryAcknowledgedAtMs,
+    });
+  }
+
+  InstallationSecurityCompanion copyWith({
+    Value<int>? singleton,
+    Value<String>? keyId,
+    Value<String>? terminalId,
+    Value<String>? setupIntent,
+    Value<String>? setupHash,
+    Value<String>? firstManagerId,
+    Value<String>? primaryCashierId,
+    Value<int>? recoveryAcknowledgedAtMs,
+  }) {
+    return InstallationSecurityCompanion(
+      singleton: singleton ?? this.singleton,
+      keyId: keyId ?? this.keyId,
+      terminalId: terminalId ?? this.terminalId,
+      setupIntent: setupIntent ?? this.setupIntent,
+      setupHash: setupHash ?? this.setupHash,
+      firstManagerId: firstManagerId ?? this.firstManagerId,
+      primaryCashierId: primaryCashierId ?? this.primaryCashierId,
+      recoveryAcknowledgedAtMs:
+          recoveryAcknowledgedAtMs ?? this.recoveryAcknowledgedAtMs,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (singleton.present) {
+      map['singleton'] = Variable<int>(singleton.value);
+    }
+    if (keyId.present) {
+      map['key_id'] = Variable<String>(keyId.value);
+    }
+    if (terminalId.present) {
+      map['terminal_id'] = Variable<String>(terminalId.value);
+    }
+    if (setupIntent.present) {
+      map['setup_intent'] = Variable<String>(setupIntent.value);
+    }
+    if (setupHash.present) {
+      map['setup_hash'] = Variable<String>(setupHash.value);
+    }
+    if (firstManagerId.present) {
+      map['first_manager_id'] = Variable<String>(firstManagerId.value);
+    }
+    if (primaryCashierId.present) {
+      map['primary_cashier_id'] = Variable<String>(primaryCashierId.value);
+    }
+    if (recoveryAcknowledgedAtMs.present) {
+      map['recovery_acknowledged_at_ms'] = Variable<int>(
+        recoveryAcknowledgedAtMs.value,
+      );
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InstallationSecurityCompanion(')
+          ..write('singleton: $singleton, ')
+          ..write('keyId: $keyId, ')
+          ..write('terminalId: $terminalId, ')
+          ..write('setupIntent: $setupIntent, ')
+          ..write('setupHash: $setupHash, ')
+          ..write('firstManagerId: $firstManagerId, ')
+          ..write('primaryCashierId: $primaryCashierId, ')
+          ..write('recoveryAcknowledgedAtMs: $recoveryAcknowledgedAtMs')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class AuthAttemptLimits extends Table
+    with TableInfo<AuthAttemptLimits, AuthAttemptLimit> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  AuthAttemptLimits(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _scopeMeta = const VerificationMeta('scope');
+  late final GeneratedColumn<String> scope = GeneratedColumn<String>(
+    'scope',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (scope IN (\'device\', \'account\'))',
+  );
+  static const VerificationMeta _subjectIdMeta = const VerificationMeta(
+    'subjectId',
+  );
+  late final GeneratedColumn<String> subjectId = GeneratedColumn<String>(
+    'subject_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _windowStartMsMeta = const VerificationMeta(
+    'windowStartMs',
+  );
+  late final GeneratedColumn<int> windowStartMs = GeneratedColumn<int>(
+    'window_start_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (window_start_ms >= 0)',
+  );
+  static const VerificationMeta _lastSeenMsMeta = const VerificationMeta(
+    'lastSeenMs',
+  );
+  late final GeneratedColumn<int> lastSeenMs = GeneratedColumn<int>(
+    'last_seen_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (last_seen_ms >= window_start_ms)',
+  );
+  static const VerificationMeta _reservedCountMeta = const VerificationMeta(
+    'reservedCount',
+  );
+  late final GeneratedColumn<int> reservedCount = GeneratedColumn<int>(
+    'reserved_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (reserved_count >= 0)',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    scope,
+    subjectId,
+    windowStartMs,
+    lastSeenMs,
+    reservedCount,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'auth_attempt_limits';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AuthAttemptLimit> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('scope')) {
+      context.handle(
+        _scopeMeta,
+        scope.isAcceptableOrUnknown(data['scope']!, _scopeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_scopeMeta);
+    }
+    if (data.containsKey('subject_id')) {
+      context.handle(
+        _subjectIdMeta,
+        subjectId.isAcceptableOrUnknown(data['subject_id']!, _subjectIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_subjectIdMeta);
+    }
+    if (data.containsKey('window_start_ms')) {
+      context.handle(
+        _windowStartMsMeta,
+        windowStartMs.isAcceptableOrUnknown(
+          data['window_start_ms']!,
+          _windowStartMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_windowStartMsMeta);
+    }
+    if (data.containsKey('last_seen_ms')) {
+      context.handle(
+        _lastSeenMsMeta,
+        lastSeenMs.isAcceptableOrUnknown(
+          data['last_seen_ms']!,
+          _lastSeenMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastSeenMsMeta);
+    }
+    if (data.containsKey('reserved_count')) {
+      context.handle(
+        _reservedCountMeta,
+        reservedCount.isAcceptableOrUnknown(
+          data['reserved_count']!,
+          _reservedCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_reservedCountMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {scope, subjectId};
+  @override
+  AuthAttemptLimit map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AuthAttemptLimit(
+      scope: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}scope'],
+      )!,
+      subjectId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subject_id'],
+      )!,
+      windowStartMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}window_start_ms'],
+      )!,
+      lastSeenMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_seen_ms'],
+      )!,
+      reservedCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}reserved_count'],
+      )!,
+    );
+  }
+
+  @override
+  AuthAttemptLimits createAlias(String alias) {
+    return AuthAttemptLimits(attachedDatabase, alias);
+  }
+
+  @override
+  List<String> get customConstraints => const [
+    'PRIMARY KEY(scope, subject_id)',
+  ];
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class AuthAttemptLimit extends DataClass
+    implements Insertable<AuthAttemptLimit> {
+  final String scope;
+  final String subjectId;
+  final int windowStartMs;
+  final int lastSeenMs;
+  final int reservedCount;
+  const AuthAttemptLimit({
+    required this.scope,
+    required this.subjectId,
+    required this.windowStartMs,
+    required this.lastSeenMs,
+    required this.reservedCount,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['scope'] = Variable<String>(scope);
+    map['subject_id'] = Variable<String>(subjectId);
+    map['window_start_ms'] = Variable<int>(windowStartMs);
+    map['last_seen_ms'] = Variable<int>(lastSeenMs);
+    map['reserved_count'] = Variable<int>(reservedCount);
+    return map;
+  }
+
+  AuthAttemptLimitsCompanion toCompanion(bool nullToAbsent) {
+    return AuthAttemptLimitsCompanion(
+      scope: Value(scope),
+      subjectId: Value(subjectId),
+      windowStartMs: Value(windowStartMs),
+      lastSeenMs: Value(lastSeenMs),
+      reservedCount: Value(reservedCount),
+    );
+  }
+
+  factory AuthAttemptLimit.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AuthAttemptLimit(
+      scope: serializer.fromJson<String>(json['scope']),
+      subjectId: serializer.fromJson<String>(json['subject_id']),
+      windowStartMs: serializer.fromJson<int>(json['window_start_ms']),
+      lastSeenMs: serializer.fromJson<int>(json['last_seen_ms']),
+      reservedCount: serializer.fromJson<int>(json['reserved_count']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'scope': serializer.toJson<String>(scope),
+      'subject_id': serializer.toJson<String>(subjectId),
+      'window_start_ms': serializer.toJson<int>(windowStartMs),
+      'last_seen_ms': serializer.toJson<int>(lastSeenMs),
+      'reserved_count': serializer.toJson<int>(reservedCount),
+    };
+  }
+
+  AuthAttemptLimit copyWith({
+    String? scope,
+    String? subjectId,
+    int? windowStartMs,
+    int? lastSeenMs,
+    int? reservedCount,
+  }) => AuthAttemptLimit(
+    scope: scope ?? this.scope,
+    subjectId: subjectId ?? this.subjectId,
+    windowStartMs: windowStartMs ?? this.windowStartMs,
+    lastSeenMs: lastSeenMs ?? this.lastSeenMs,
+    reservedCount: reservedCount ?? this.reservedCount,
+  );
+  AuthAttemptLimit copyWithCompanion(AuthAttemptLimitsCompanion data) {
+    return AuthAttemptLimit(
+      scope: data.scope.present ? data.scope.value : this.scope,
+      subjectId: data.subjectId.present ? data.subjectId.value : this.subjectId,
+      windowStartMs: data.windowStartMs.present
+          ? data.windowStartMs.value
+          : this.windowStartMs,
+      lastSeenMs: data.lastSeenMs.present
+          ? data.lastSeenMs.value
+          : this.lastSeenMs,
+      reservedCount: data.reservedCount.present
+          ? data.reservedCount.value
+          : this.reservedCount,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthAttemptLimit(')
+          ..write('scope: $scope, ')
+          ..write('subjectId: $subjectId, ')
+          ..write('windowStartMs: $windowStartMs, ')
+          ..write('lastSeenMs: $lastSeenMs, ')
+          ..write('reservedCount: $reservedCount')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(scope, subjectId, windowStartMs, lastSeenMs, reservedCount);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AuthAttemptLimit &&
+          other.scope == this.scope &&
+          other.subjectId == this.subjectId &&
+          other.windowStartMs == this.windowStartMs &&
+          other.lastSeenMs == this.lastSeenMs &&
+          other.reservedCount == this.reservedCount);
+}
+
+class AuthAttemptLimitsCompanion extends UpdateCompanion<AuthAttemptLimit> {
+  final Value<String> scope;
+  final Value<String> subjectId;
+  final Value<int> windowStartMs;
+  final Value<int> lastSeenMs;
+  final Value<int> reservedCount;
+  final Value<int> rowid;
+  const AuthAttemptLimitsCompanion({
+    this.scope = const Value.absent(),
+    this.subjectId = const Value.absent(),
+    this.windowStartMs = const Value.absent(),
+    this.lastSeenMs = const Value.absent(),
+    this.reservedCount = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AuthAttemptLimitsCompanion.insert({
+    required String scope,
+    required String subjectId,
+    required int windowStartMs,
+    required int lastSeenMs,
+    required int reservedCount,
+    this.rowid = const Value.absent(),
+  }) : scope = Value(scope),
+       subjectId = Value(subjectId),
+       windowStartMs = Value(windowStartMs),
+       lastSeenMs = Value(lastSeenMs),
+       reservedCount = Value(reservedCount);
+  static Insertable<AuthAttemptLimit> custom({
+    Expression<String>? scope,
+    Expression<String>? subjectId,
+    Expression<int>? windowStartMs,
+    Expression<int>? lastSeenMs,
+    Expression<int>? reservedCount,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (scope != null) 'scope': scope,
+      if (subjectId != null) 'subject_id': subjectId,
+      if (windowStartMs != null) 'window_start_ms': windowStartMs,
+      if (lastSeenMs != null) 'last_seen_ms': lastSeenMs,
+      if (reservedCount != null) 'reserved_count': reservedCount,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AuthAttemptLimitsCompanion copyWith({
+    Value<String>? scope,
+    Value<String>? subjectId,
+    Value<int>? windowStartMs,
+    Value<int>? lastSeenMs,
+    Value<int>? reservedCount,
+    Value<int>? rowid,
+  }) {
+    return AuthAttemptLimitsCompanion(
+      scope: scope ?? this.scope,
+      subjectId: subjectId ?? this.subjectId,
+      windowStartMs: windowStartMs ?? this.windowStartMs,
+      lastSeenMs: lastSeenMs ?? this.lastSeenMs,
+      reservedCount: reservedCount ?? this.reservedCount,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (scope.present) {
+      map['scope'] = Variable<String>(scope.value);
+    }
+    if (subjectId.present) {
+      map['subject_id'] = Variable<String>(subjectId.value);
+    }
+    if (windowStartMs.present) {
+      map['window_start_ms'] = Variable<int>(windowStartMs.value);
+    }
+    if (lastSeenMs.present) {
+      map['last_seen_ms'] = Variable<int>(lastSeenMs.value);
+    }
+    if (reservedCount.present) {
+      map['reserved_count'] = Variable<int>(reservedCount.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthAttemptLimitsCompanion(')
+          ..write('scope: $scope, ')
+          ..write('subjectId: $subjectId, ')
+          ..write('windowStartMs: $windowStartMs, ')
+          ..write('lastSeenMs: $lastSeenMs, ')
+          ..write('reservedCount: $reservedCount, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class AuthSessions extends Table with TableInfo<AuthSessions, AuthSession> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  AuthSessions(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL PRIMARY KEY',
+  );
+  static const VerificationMeta _tokenHashMeta = const VerificationMeta(
+    'tokenHash',
+  );
+  late final GeneratedColumn<String> tokenHash = GeneratedColumn<String>(
+    'token_hash',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL UNIQUE CHECK (length(token_hash) = 64)',
+  );
+  static const VerificationMeta _staffIdMeta = const VerificationMeta(
+    'staffId',
+  );
+  late final GeneratedColumn<String> staffId = GeneratedColumn<String>(
+    'staff_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL REFERENCES staff_credentials(id)',
+  );
+  static const VerificationMeta _credentialRevisionMeta =
+      const VerificationMeta('credentialRevision');
+  late final GeneratedColumn<int> credentialRevision = GeneratedColumn<int>(
+    'credential_revision',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (credential_revision >= 1)',
+  );
+  static const VerificationMeta _roleAtIssueMeta = const VerificationMeta(
+    'roleAtIssue',
+  );
+  late final GeneratedColumn<String> roleAtIssue = GeneratedColumn<String>(
+    'role_at_issue',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints:
+        'NOT NULL CHECK (role_at_issue IN (\'cashier\', \'manager\'))',
+  );
+  static const VerificationMeta _terminalIdMeta = const VerificationMeta(
+    'terminalId',
+  );
+  late final GeneratedColumn<String> terminalId = GeneratedColumn<String>(
+    'terminal_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _issuedAtMsMeta = const VerificationMeta(
+    'issuedAtMs',
+  );
+  late final GeneratedColumn<int> issuedAtMs = GeneratedColumn<int>(
+    'issued_at_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (issued_at_ms >= 0)',
+  );
+  static const VerificationMeta _lastSeenMsMeta = const VerificationMeta(
+    'lastSeenMs',
+  );
+  late final GeneratedColumn<int> lastSeenMs = GeneratedColumn<int>(
+    'last_seen_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (last_seen_ms >= issued_at_ms)',
+  );
+  static const VerificationMeta _expiresAtMsMeta = const VerificationMeta(
+    'expiresAtMs',
+  );
+  late final GeneratedColumn<int> expiresAtMs = GeneratedColumn<int>(
+    'expires_at_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (expires_at_ms > issued_at_ms)',
+  );
+  static const VerificationMeta _revokedMeta = const VerificationMeta(
+    'revoked',
+  );
+  late final GeneratedColumn<int> revoked = GeneratedColumn<int>(
+    'revoked',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (revoked IN (0, 1))',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    tokenHash,
+    staffId,
+    credentialRevision,
+    roleAtIssue,
+    terminalId,
+    issuedAtMs,
+    lastSeenMs,
+    expiresAtMs,
+    revoked,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'auth_sessions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AuthSession> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('token_hash')) {
+      context.handle(
+        _tokenHashMeta,
+        tokenHash.isAcceptableOrUnknown(data['token_hash']!, _tokenHashMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_tokenHashMeta);
+    }
+    if (data.containsKey('staff_id')) {
+      context.handle(
+        _staffIdMeta,
+        staffId.isAcceptableOrUnknown(data['staff_id']!, _staffIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_staffIdMeta);
+    }
+    if (data.containsKey('credential_revision')) {
+      context.handle(
+        _credentialRevisionMeta,
+        credentialRevision.isAcceptableOrUnknown(
+          data['credential_revision']!,
+          _credentialRevisionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_credentialRevisionMeta);
+    }
+    if (data.containsKey('role_at_issue')) {
+      context.handle(
+        _roleAtIssueMeta,
+        roleAtIssue.isAcceptableOrUnknown(
+          data['role_at_issue']!,
+          _roleAtIssueMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_roleAtIssueMeta);
+    }
+    if (data.containsKey('terminal_id')) {
+      context.handle(
+        _terminalIdMeta,
+        terminalId.isAcceptableOrUnknown(data['terminal_id']!, _terminalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_terminalIdMeta);
+    }
+    if (data.containsKey('issued_at_ms')) {
+      context.handle(
+        _issuedAtMsMeta,
+        issuedAtMs.isAcceptableOrUnknown(
+          data['issued_at_ms']!,
+          _issuedAtMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_issuedAtMsMeta);
+    }
+    if (data.containsKey('last_seen_ms')) {
+      context.handle(
+        _lastSeenMsMeta,
+        lastSeenMs.isAcceptableOrUnknown(
+          data['last_seen_ms']!,
+          _lastSeenMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_lastSeenMsMeta);
+    }
+    if (data.containsKey('expires_at_ms')) {
+      context.handle(
+        _expiresAtMsMeta,
+        expiresAtMs.isAcceptableOrUnknown(
+          data['expires_at_ms']!,
+          _expiresAtMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_expiresAtMsMeta);
+    }
+    if (data.containsKey('revoked')) {
+      context.handle(
+        _revokedMeta,
+        revoked.isAcceptableOrUnknown(data['revoked']!, _revokedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_revokedMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AuthSession map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AuthSession(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      tokenHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}token_hash'],
+      )!,
+      staffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}staff_id'],
+      )!,
+      credentialRevision: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}credential_revision'],
+      )!,
+      roleAtIssue: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}role_at_issue'],
+      )!,
+      terminalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}terminal_id'],
+      )!,
+      issuedAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}issued_at_ms'],
+      )!,
+      lastSeenMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_seen_ms'],
+      )!,
+      expiresAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}expires_at_ms'],
+      )!,
+      revoked: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}revoked'],
+      )!,
+    );
+  }
+
+  @override
+  AuthSessions createAlias(String alias) {
+    return AuthSessions(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class AuthSession extends DataClass implements Insertable<AuthSession> {
+  final String id;
+  final String tokenHash;
+  final String staffId;
+  final int credentialRevision;
+  final String roleAtIssue;
+  final String terminalId;
+  final int issuedAtMs;
+  final int lastSeenMs;
+  final int expiresAtMs;
+  final int revoked;
+  const AuthSession({
+    required this.id,
+    required this.tokenHash,
+    required this.staffId,
+    required this.credentialRevision,
+    required this.roleAtIssue,
+    required this.terminalId,
+    required this.issuedAtMs,
+    required this.lastSeenMs,
+    required this.expiresAtMs,
+    required this.revoked,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['token_hash'] = Variable<String>(tokenHash);
+    map['staff_id'] = Variable<String>(staffId);
+    map['credential_revision'] = Variable<int>(credentialRevision);
+    map['role_at_issue'] = Variable<String>(roleAtIssue);
+    map['terminal_id'] = Variable<String>(terminalId);
+    map['issued_at_ms'] = Variable<int>(issuedAtMs);
+    map['last_seen_ms'] = Variable<int>(lastSeenMs);
+    map['expires_at_ms'] = Variable<int>(expiresAtMs);
+    map['revoked'] = Variable<int>(revoked);
+    return map;
+  }
+
+  AuthSessionsCompanion toCompanion(bool nullToAbsent) {
+    return AuthSessionsCompanion(
+      id: Value(id),
+      tokenHash: Value(tokenHash),
+      staffId: Value(staffId),
+      credentialRevision: Value(credentialRevision),
+      roleAtIssue: Value(roleAtIssue),
+      terminalId: Value(terminalId),
+      issuedAtMs: Value(issuedAtMs),
+      lastSeenMs: Value(lastSeenMs),
+      expiresAtMs: Value(expiresAtMs),
+      revoked: Value(revoked),
+    );
+  }
+
+  factory AuthSession.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AuthSession(
+      id: serializer.fromJson<String>(json['id']),
+      tokenHash: serializer.fromJson<String>(json['token_hash']),
+      staffId: serializer.fromJson<String>(json['staff_id']),
+      credentialRevision: serializer.fromJson<int>(json['credential_revision']),
+      roleAtIssue: serializer.fromJson<String>(json['role_at_issue']),
+      terminalId: serializer.fromJson<String>(json['terminal_id']),
+      issuedAtMs: serializer.fromJson<int>(json['issued_at_ms']),
+      lastSeenMs: serializer.fromJson<int>(json['last_seen_ms']),
+      expiresAtMs: serializer.fromJson<int>(json['expires_at_ms']),
+      revoked: serializer.fromJson<int>(json['revoked']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'token_hash': serializer.toJson<String>(tokenHash),
+      'staff_id': serializer.toJson<String>(staffId),
+      'credential_revision': serializer.toJson<int>(credentialRevision),
+      'role_at_issue': serializer.toJson<String>(roleAtIssue),
+      'terminal_id': serializer.toJson<String>(terminalId),
+      'issued_at_ms': serializer.toJson<int>(issuedAtMs),
+      'last_seen_ms': serializer.toJson<int>(lastSeenMs),
+      'expires_at_ms': serializer.toJson<int>(expiresAtMs),
+      'revoked': serializer.toJson<int>(revoked),
+    };
+  }
+
+  AuthSession copyWith({
+    String? id,
+    String? tokenHash,
+    String? staffId,
+    int? credentialRevision,
+    String? roleAtIssue,
+    String? terminalId,
+    int? issuedAtMs,
+    int? lastSeenMs,
+    int? expiresAtMs,
+    int? revoked,
+  }) => AuthSession(
+    id: id ?? this.id,
+    tokenHash: tokenHash ?? this.tokenHash,
+    staffId: staffId ?? this.staffId,
+    credentialRevision: credentialRevision ?? this.credentialRevision,
+    roleAtIssue: roleAtIssue ?? this.roleAtIssue,
+    terminalId: terminalId ?? this.terminalId,
+    issuedAtMs: issuedAtMs ?? this.issuedAtMs,
+    lastSeenMs: lastSeenMs ?? this.lastSeenMs,
+    expiresAtMs: expiresAtMs ?? this.expiresAtMs,
+    revoked: revoked ?? this.revoked,
+  );
+  AuthSession copyWithCompanion(AuthSessionsCompanion data) {
+    return AuthSession(
+      id: data.id.present ? data.id.value : this.id,
+      tokenHash: data.tokenHash.present ? data.tokenHash.value : this.tokenHash,
+      staffId: data.staffId.present ? data.staffId.value : this.staffId,
+      credentialRevision: data.credentialRevision.present
+          ? data.credentialRevision.value
+          : this.credentialRevision,
+      roleAtIssue: data.roleAtIssue.present
+          ? data.roleAtIssue.value
+          : this.roleAtIssue,
+      terminalId: data.terminalId.present
+          ? data.terminalId.value
+          : this.terminalId,
+      issuedAtMs: data.issuedAtMs.present
+          ? data.issuedAtMs.value
+          : this.issuedAtMs,
+      lastSeenMs: data.lastSeenMs.present
+          ? data.lastSeenMs.value
+          : this.lastSeenMs,
+      expiresAtMs: data.expiresAtMs.present
+          ? data.expiresAtMs.value
+          : this.expiresAtMs,
+      revoked: data.revoked.present ? data.revoked.value : this.revoked,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthSession(')
+          ..write('id: $id, ')
+          ..write('tokenHash: $tokenHash, ')
+          ..write('staffId: $staffId, ')
+          ..write('credentialRevision: $credentialRevision, ')
+          ..write('roleAtIssue: $roleAtIssue, ')
+          ..write('terminalId: $terminalId, ')
+          ..write('issuedAtMs: $issuedAtMs, ')
+          ..write('lastSeenMs: $lastSeenMs, ')
+          ..write('expiresAtMs: $expiresAtMs, ')
+          ..write('revoked: $revoked')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    tokenHash,
+    staffId,
+    credentialRevision,
+    roleAtIssue,
+    terminalId,
+    issuedAtMs,
+    lastSeenMs,
+    expiresAtMs,
+    revoked,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AuthSession &&
+          other.id == this.id &&
+          other.tokenHash == this.tokenHash &&
+          other.staffId == this.staffId &&
+          other.credentialRevision == this.credentialRevision &&
+          other.roleAtIssue == this.roleAtIssue &&
+          other.terminalId == this.terminalId &&
+          other.issuedAtMs == this.issuedAtMs &&
+          other.lastSeenMs == this.lastSeenMs &&
+          other.expiresAtMs == this.expiresAtMs &&
+          other.revoked == this.revoked);
+}
+
+class AuthSessionsCompanion extends UpdateCompanion<AuthSession> {
+  final Value<String> id;
+  final Value<String> tokenHash;
+  final Value<String> staffId;
+  final Value<int> credentialRevision;
+  final Value<String> roleAtIssue;
+  final Value<String> terminalId;
+  final Value<int> issuedAtMs;
+  final Value<int> lastSeenMs;
+  final Value<int> expiresAtMs;
+  final Value<int> revoked;
+  final Value<int> rowid;
+  const AuthSessionsCompanion({
+    this.id = const Value.absent(),
+    this.tokenHash = const Value.absent(),
+    this.staffId = const Value.absent(),
+    this.credentialRevision = const Value.absent(),
+    this.roleAtIssue = const Value.absent(),
+    this.terminalId = const Value.absent(),
+    this.issuedAtMs = const Value.absent(),
+    this.lastSeenMs = const Value.absent(),
+    this.expiresAtMs = const Value.absent(),
+    this.revoked = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  AuthSessionsCompanion.insert({
+    required String id,
+    required String tokenHash,
+    required String staffId,
+    required int credentialRevision,
+    required String roleAtIssue,
+    required String terminalId,
+    required int issuedAtMs,
+    required int lastSeenMs,
+    required int expiresAtMs,
+    required int revoked,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       tokenHash = Value(tokenHash),
+       staffId = Value(staffId),
+       credentialRevision = Value(credentialRevision),
+       roleAtIssue = Value(roleAtIssue),
+       terminalId = Value(terminalId),
+       issuedAtMs = Value(issuedAtMs),
+       lastSeenMs = Value(lastSeenMs),
+       expiresAtMs = Value(expiresAtMs),
+       revoked = Value(revoked);
+  static Insertable<AuthSession> custom({
+    Expression<String>? id,
+    Expression<String>? tokenHash,
+    Expression<String>? staffId,
+    Expression<int>? credentialRevision,
+    Expression<String>? roleAtIssue,
+    Expression<String>? terminalId,
+    Expression<int>? issuedAtMs,
+    Expression<int>? lastSeenMs,
+    Expression<int>? expiresAtMs,
+    Expression<int>? revoked,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (tokenHash != null) 'token_hash': tokenHash,
+      if (staffId != null) 'staff_id': staffId,
+      if (credentialRevision != null) 'credential_revision': credentialRevision,
+      if (roleAtIssue != null) 'role_at_issue': roleAtIssue,
+      if (terminalId != null) 'terminal_id': terminalId,
+      if (issuedAtMs != null) 'issued_at_ms': issuedAtMs,
+      if (lastSeenMs != null) 'last_seen_ms': lastSeenMs,
+      if (expiresAtMs != null) 'expires_at_ms': expiresAtMs,
+      if (revoked != null) 'revoked': revoked,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  AuthSessionsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? tokenHash,
+    Value<String>? staffId,
+    Value<int>? credentialRevision,
+    Value<String>? roleAtIssue,
+    Value<String>? terminalId,
+    Value<int>? issuedAtMs,
+    Value<int>? lastSeenMs,
+    Value<int>? expiresAtMs,
+    Value<int>? revoked,
+    Value<int>? rowid,
+  }) {
+    return AuthSessionsCompanion(
+      id: id ?? this.id,
+      tokenHash: tokenHash ?? this.tokenHash,
+      staffId: staffId ?? this.staffId,
+      credentialRevision: credentialRevision ?? this.credentialRevision,
+      roleAtIssue: roleAtIssue ?? this.roleAtIssue,
+      terminalId: terminalId ?? this.terminalId,
+      issuedAtMs: issuedAtMs ?? this.issuedAtMs,
+      lastSeenMs: lastSeenMs ?? this.lastSeenMs,
+      expiresAtMs: expiresAtMs ?? this.expiresAtMs,
+      revoked: revoked ?? this.revoked,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (tokenHash.present) {
+      map['token_hash'] = Variable<String>(tokenHash.value);
+    }
+    if (staffId.present) {
+      map['staff_id'] = Variable<String>(staffId.value);
+    }
+    if (credentialRevision.present) {
+      map['credential_revision'] = Variable<int>(credentialRevision.value);
+    }
+    if (roleAtIssue.present) {
+      map['role_at_issue'] = Variable<String>(roleAtIssue.value);
+    }
+    if (terminalId.present) {
+      map['terminal_id'] = Variable<String>(terminalId.value);
+    }
+    if (issuedAtMs.present) {
+      map['issued_at_ms'] = Variable<int>(issuedAtMs.value);
+    }
+    if (lastSeenMs.present) {
+      map['last_seen_ms'] = Variable<int>(lastSeenMs.value);
+    }
+    if (expiresAtMs.present) {
+      map['expires_at_ms'] = Variable<int>(expiresAtMs.value);
+    }
+    if (revoked.present) {
+      map['revoked'] = Variable<int>(revoked.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AuthSessionsCompanion(')
+          ..write('id: $id, ')
+          ..write('tokenHash: $tokenHash, ')
+          ..write('staffId: $staffId, ')
+          ..write('credentialRevision: $credentialRevision, ')
+          ..write('roleAtIssue: $roleAtIssue, ')
+          ..write('terminalId: $terminalId, ')
+          ..write('issuedAtMs: $issuedAtMs, ')
+          ..write('lastSeenMs: $lastSeenMs, ')
+          ..write('expiresAtMs: $expiresAtMs, ')
+          ..write('revoked: $revoked, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class SecurityEvents extends Table
+    with TableInfo<SecurityEvents, SecurityEvent> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  SecurityEvents(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL PRIMARY KEY',
+  );
+  static const VerificationMeta _kindMeta = const VerificationMeta('kind');
+  late final GeneratedColumn<String> kind = GeneratedColumn<String>(
+    'kind',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints:
+        'NOT NULL CHECK (kind IN (\'onboarding_completed\', \'login_attempt_reserved\', \'login_failed\', \'login_succeeded\', \'session_locked\'))',
+  );
+  static const VerificationMeta _staffIdMeta = const VerificationMeta(
+    'staffId',
+  );
+  late final GeneratedColumn<String> staffId = GeneratedColumn<String>(
+    'staff_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'REFERENCES staff_credentials(id)',
+  );
+  static const VerificationMeta _sessionIdMeta = const VerificationMeta(
+    'sessionId',
+  );
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+    'session_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'REFERENCES auth_sessions(id)',
+  );
+  static const VerificationMeta _terminalIdMeta = const VerificationMeta(
+    'terminalId',
+  );
+  late final GeneratedColumn<String> terminalId = GeneratedColumn<String>(
+    'terminal_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
+  static const VerificationMeta _occurredAtMsMeta = const VerificationMeta(
+    'occurredAtMs',
+  );
+  late final GeneratedColumn<int> occurredAtMs = GeneratedColumn<int>(
+    'occurred_at_ms',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL CHECK (occurred_at_ms >= 0)',
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    kind,
+    staffId,
+    sessionId,
+    terminalId,
+    occurredAtMs,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'security_events';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SecurityEvent> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('kind')) {
+      context.handle(
+        _kindMeta,
+        kind.isAcceptableOrUnknown(data['kind']!, _kindMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kindMeta);
+    }
+    if (data.containsKey('staff_id')) {
+      context.handle(
+        _staffIdMeta,
+        staffId.isAcceptableOrUnknown(data['staff_id']!, _staffIdMeta),
+      );
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(
+        _sessionIdMeta,
+        sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta),
+      );
+    }
+    if (data.containsKey('terminal_id')) {
+      context.handle(
+        _terminalIdMeta,
+        terminalId.isAcceptableOrUnknown(data['terminal_id']!, _terminalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_terminalIdMeta);
+    }
+    if (data.containsKey('occurred_at_ms')) {
+      context.handle(
+        _occurredAtMsMeta,
+        occurredAtMs.isAcceptableOrUnknown(
+          data['occurred_at_ms']!,
+          _occurredAtMsMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredAtMsMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SecurityEvent map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SecurityEvent(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      kind: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kind'],
+      )!,
+      staffId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}staff_id'],
+      ),
+      sessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}session_id'],
+      ),
+      terminalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}terminal_id'],
+      )!,
+      occurredAtMs: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}occurred_at_ms'],
+      )!,
+    );
+  }
+
+  @override
+  SecurityEvents createAlias(String alias) {
+    return SecurityEvents(attachedDatabase, alias);
+  }
+
+  @override
+  bool get dontWriteConstraints => true;
+}
+
+class SecurityEvent extends DataClass implements Insertable<SecurityEvent> {
+  final String id;
+  final String kind;
+  final String? staffId;
+  final String? sessionId;
+  final String terminalId;
+  final int occurredAtMs;
+  const SecurityEvent({
+    required this.id,
+    required this.kind,
+    this.staffId,
+    this.sessionId,
+    required this.terminalId,
+    required this.occurredAtMs,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['kind'] = Variable<String>(kind);
+    if (!nullToAbsent || staffId != null) {
+      map['staff_id'] = Variable<String>(staffId);
+    }
+    if (!nullToAbsent || sessionId != null) {
+      map['session_id'] = Variable<String>(sessionId);
+    }
+    map['terminal_id'] = Variable<String>(terminalId);
+    map['occurred_at_ms'] = Variable<int>(occurredAtMs);
+    return map;
+  }
+
+  SecurityEventsCompanion toCompanion(bool nullToAbsent) {
+    return SecurityEventsCompanion(
+      id: Value(id),
+      kind: Value(kind),
+      staffId: staffId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(staffId),
+      sessionId: sessionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sessionId),
+      terminalId: Value(terminalId),
+      occurredAtMs: Value(occurredAtMs),
+    );
+  }
+
+  factory SecurityEvent.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SecurityEvent(
+      id: serializer.fromJson<String>(json['id']),
+      kind: serializer.fromJson<String>(json['kind']),
+      staffId: serializer.fromJson<String?>(json['staff_id']),
+      sessionId: serializer.fromJson<String?>(json['session_id']),
+      terminalId: serializer.fromJson<String>(json['terminal_id']),
+      occurredAtMs: serializer.fromJson<int>(json['occurred_at_ms']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'kind': serializer.toJson<String>(kind),
+      'staff_id': serializer.toJson<String?>(staffId),
+      'session_id': serializer.toJson<String?>(sessionId),
+      'terminal_id': serializer.toJson<String>(terminalId),
+      'occurred_at_ms': serializer.toJson<int>(occurredAtMs),
+    };
+  }
+
+  SecurityEvent copyWith({
+    String? id,
+    String? kind,
+    Value<String?> staffId = const Value.absent(),
+    Value<String?> sessionId = const Value.absent(),
+    String? terminalId,
+    int? occurredAtMs,
+  }) => SecurityEvent(
+    id: id ?? this.id,
+    kind: kind ?? this.kind,
+    staffId: staffId.present ? staffId.value : this.staffId,
+    sessionId: sessionId.present ? sessionId.value : this.sessionId,
+    terminalId: terminalId ?? this.terminalId,
+    occurredAtMs: occurredAtMs ?? this.occurredAtMs,
+  );
+  SecurityEvent copyWithCompanion(SecurityEventsCompanion data) {
+    return SecurityEvent(
+      id: data.id.present ? data.id.value : this.id,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      staffId: data.staffId.present ? data.staffId.value : this.staffId,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      terminalId: data.terminalId.present
+          ? data.terminalId.value
+          : this.terminalId,
+      occurredAtMs: data.occurredAtMs.present
+          ? data.occurredAtMs.value
+          : this.occurredAtMs,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SecurityEvent(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('staffId: $staffId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('terminalId: $terminalId, ')
+          ..write('occurredAtMs: $occurredAtMs')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, kind, staffId, sessionId, terminalId, occurredAtMs);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SecurityEvent &&
+          other.id == this.id &&
+          other.kind == this.kind &&
+          other.staffId == this.staffId &&
+          other.sessionId == this.sessionId &&
+          other.terminalId == this.terminalId &&
+          other.occurredAtMs == this.occurredAtMs);
+}
+
+class SecurityEventsCompanion extends UpdateCompanion<SecurityEvent> {
+  final Value<String> id;
+  final Value<String> kind;
+  final Value<String?> staffId;
+  final Value<String?> sessionId;
+  final Value<String> terminalId;
+  final Value<int> occurredAtMs;
+  final Value<int> rowid;
+  const SecurityEventsCompanion({
+    this.id = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.staffId = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.terminalId = const Value.absent(),
+    this.occurredAtMs = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SecurityEventsCompanion.insert({
+    required String id,
+    required String kind,
+    this.staffId = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    required String terminalId,
+    required int occurredAtMs,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       kind = Value(kind),
+       terminalId = Value(terminalId),
+       occurredAtMs = Value(occurredAtMs);
+  static Insertable<SecurityEvent> custom({
+    Expression<String>? id,
+    Expression<String>? kind,
+    Expression<String>? staffId,
+    Expression<String>? sessionId,
+    Expression<String>? terminalId,
+    Expression<int>? occurredAtMs,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+      if (staffId != null) 'staff_id': staffId,
+      if (sessionId != null) 'session_id': sessionId,
+      if (terminalId != null) 'terminal_id': terminalId,
+      if (occurredAtMs != null) 'occurred_at_ms': occurredAtMs,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SecurityEventsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? kind,
+    Value<String?>? staffId,
+    Value<String?>? sessionId,
+    Value<String>? terminalId,
+    Value<int>? occurredAtMs,
+    Value<int>? rowid,
+  }) {
+    return SecurityEventsCompanion(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      staffId: staffId ?? this.staffId,
+      sessionId: sessionId ?? this.sessionId,
+      terminalId: terminalId ?? this.terminalId,
+      occurredAtMs: occurredAtMs ?? this.occurredAtMs,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(kind.value);
+    }
+    if (staffId.present) {
+      map['staff_id'] = Variable<String>(staffId.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (terminalId.present) {
+      map['terminal_id'] = Variable<String>(terminalId.value);
+    }
+    if (occurredAtMs.present) {
+      map['occurred_at_ms'] = Variable<int>(occurredAtMs.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SecurityEventsCompanion(')
+          ..write('id: $id, ')
+          ..write('kind: $kind, ')
+          ..write('staffId: $staffId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('terminalId: $terminalId, ')
+          ..write('occurredAtMs: $occurredAtMs, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$PosDatabase extends GeneratedDatabase {
   _$PosDatabase(QueryExecutor e) : super(e);
   $PosDatabaseManager get managers => $PosDatabaseManager(this);
@@ -2215,6 +4791,29 @@ abstract class _$PosDatabase extends GeneratedDatabase {
     'CREATE TRIGGER audit_events_no_replace BEFORE INSERT ON audit_events WHEN EXISTS (SELECT 1 FROM audit_events WHERE id = NEW.id OR command_id = NEW.command_id) BEGIN SELECT RAISE (ABORT, \'Audit events cannot be replaced\');END',
     'audit_events_no_replace',
   );
+  late final StaffCredentials staffCredentials = StaffCredentials(this);
+  late final Index activePinFingerprints = Index(
+    'active_pin_fingerprints',
+    'CREATE UNIQUE INDEX active_pin_fingerprints ON staff_credentials (pin_fingerprint) WHERE enabled = 1',
+  );
+  late final InstallationSecurity installationSecurity = InstallationSecurity(
+    this,
+  );
+  late final AuthAttemptLimits authAttemptLimits = AuthAttemptLimits(this);
+  late final AuthSessions authSessions = AuthSessions(this);
+  late final SecurityEvents securityEvents = SecurityEvents(this);
+  late final Trigger securityEventsNoUpdate = Trigger(
+    'CREATE TRIGGER security_events_no_update BEFORE UPDATE ON security_events BEGIN SELECT RAISE (ABORT, \'Security history is immutable\');END',
+    'security_events_no_update',
+  );
+  late final Trigger securityEventsNoDelete = Trigger(
+    'CREATE TRIGGER security_events_no_delete BEFORE DELETE ON security_events BEGIN SELECT RAISE (ABORT, \'Security history is immutable\');END',
+    'security_events_no_delete',
+  );
+  late final Trigger securityEventsNoReplace = Trigger(
+    'CREATE TRIGGER security_events_no_replace BEFORE INSERT ON security_events WHEN EXISTS (SELECT 1 FROM security_events WHERE id = NEW.id) BEGIN SELECT RAISE (ABORT, \'Security history cannot be replaced\');END',
+    'security_events_no_replace',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2231,6 +4830,15 @@ abstract class _$PosDatabase extends GeneratedDatabase {
     commandsNoDelete,
     commandsNoReplace,
     auditEventsNoReplace,
+    staffCredentials,
+    activePinFingerprints,
+    installationSecurity,
+    authAttemptLimits,
+    authSessions,
+    securityEvents,
+    securityEventsNoUpdate,
+    securityEventsNoDelete,
+    securityEventsNoReplace,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -2272,6 +4880,27 @@ abstract class _$PosDatabase extends GeneratedDatabase {
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'audit_events',
+        limitUpdateKind: UpdateKind.insert,
+      ),
+      result: [],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'security_events',
+        limitUpdateKind: UpdateKind.update,
+      ),
+      result: [],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'security_events',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'security_events',
         limitUpdateKind: UpdateKind.insert,
       ),
       result: [],
@@ -3670,6 +6299,2131 @@ typedef $AuditEventsProcessedTableManager =
       AuditEvent,
       PrefetchHooks Function({bool commandId})
     >;
+typedef $StaffCredentialsCreateCompanionBuilder =
+    StaffCredentialsCompanion Function({
+      required String id,
+      required String displayName,
+      required String role,
+      required int enabled,
+      required int revision,
+      required String pinFingerprint,
+      required String saltBase64,
+      required String hashBase64,
+      required int verifierVersion,
+      Value<int> rowid,
+    });
+typedef $StaffCredentialsUpdateCompanionBuilder =
+    StaffCredentialsCompanion Function({
+      Value<String> id,
+      Value<String> displayName,
+      Value<String> role,
+      Value<int> enabled,
+      Value<int> revision,
+      Value<String> pinFingerprint,
+      Value<String> saltBase64,
+      Value<String> hashBase64,
+      Value<int> verifierVersion,
+      Value<int> rowid,
+    });
+
+final class $StaffCredentialsReferences
+    extends BaseReferences<_$PosDatabase, StaffCredentials, StaffCredential> {
+  $StaffCredentialsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<AuthSessions, List<AuthSession>>
+  _authSessionsRefsTable(_$PosDatabase db) => MultiTypedResultKey.fromTable(
+    db.authSessions,
+    aliasName: 'staff_credentials__id__auth_sessions__staff_id',
+  );
+
+  $AuthSessionsProcessedTableManager get authSessionsRefs {
+    final manager = $AuthSessionsTableManager(
+      $_db,
+      $_db.authSessions,
+    ).filter((f) => f.staffId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_authSessionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<SecurityEvents, List<SecurityEvent>>
+  _securityEventsRefsTable(_$PosDatabase db) => MultiTypedResultKey.fromTable(
+    db.securityEvents,
+    aliasName: 'staff_credentials__id__security_events__staff_id',
+  );
+
+  $SecurityEventsProcessedTableManager get securityEventsRefs {
+    final manager = $SecurityEventsTableManager(
+      $_db,
+      $_db.securityEvents,
+    ).filter((f) => f.staffId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_securityEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $StaffCredentialsFilterComposer
+    extends Composer<_$PosDatabase, StaffCredentials> {
+  $StaffCredentialsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pinFingerprint => $composableBuilder(
+    column: $table.pinFingerprint,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get saltBase64 => $composableBuilder(
+    column: $table.saltBase64,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hashBase64 => $composableBuilder(
+    column: $table.hashBase64,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get verifierVersion => $composableBuilder(
+    column: $table.verifierVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> authSessionsRefs(
+    Expression<bool> Function($AuthSessionsFilterComposer f) f,
+  ) {
+    final $AuthSessionsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.authSessions,
+      getReferencedColumn: (t) => t.staffId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $AuthSessionsFilterComposer(
+            $db: $db,
+            $table: $db.authSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> securityEventsRefs(
+    Expression<bool> Function($SecurityEventsFilterComposer f) f,
+  ) {
+    final $SecurityEventsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.securityEvents,
+      getReferencedColumn: (t) => t.staffId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $SecurityEventsFilterComposer(
+            $db: $db,
+            $table: $db.securityEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $StaffCredentialsOrderingComposer
+    extends Composer<_$PosDatabase, StaffCredentials> {
+  $StaffCredentialsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get role => $composableBuilder(
+    column: $table.role,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get enabled => $composableBuilder(
+    column: $table.enabled,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revision => $composableBuilder(
+    column: $table.revision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pinFingerprint => $composableBuilder(
+    column: $table.pinFingerprint,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get saltBase64 => $composableBuilder(
+    column: $table.saltBase64,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hashBase64 => $composableBuilder(
+    column: $table.hashBase64,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get verifierVersion => $composableBuilder(
+    column: $table.verifierVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $StaffCredentialsAnnotationComposer
+    extends Composer<_$PosDatabase, StaffCredentials> {
+  $StaffCredentialsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+    column: $table.displayName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get role =>
+      $composableBuilder(column: $table.role, builder: (column) => column);
+
+  GeneratedColumn<int> get enabled =>
+      $composableBuilder(column: $table.enabled, builder: (column) => column);
+
+  GeneratedColumn<int> get revision =>
+      $composableBuilder(column: $table.revision, builder: (column) => column);
+
+  GeneratedColumn<String> get pinFingerprint => $composableBuilder(
+    column: $table.pinFingerprint,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get saltBase64 => $composableBuilder(
+    column: $table.saltBase64,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get hashBase64 => $composableBuilder(
+    column: $table.hashBase64,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get verifierVersion => $composableBuilder(
+    column: $table.verifierVersion,
+    builder: (column) => column,
+  );
+
+  Expression<T> authSessionsRefs<T extends Object>(
+    Expression<T> Function($AuthSessionsAnnotationComposer a) f,
+  ) {
+    final $AuthSessionsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.authSessions,
+      getReferencedColumn: (t) => t.staffId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $AuthSessionsAnnotationComposer(
+            $db: $db,
+            $table: $db.authSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> securityEventsRefs<T extends Object>(
+    Expression<T> Function($SecurityEventsAnnotationComposer a) f,
+  ) {
+    final $SecurityEventsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.securityEvents,
+      getReferencedColumn: (t) => t.staffId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $SecurityEventsAnnotationComposer(
+            $db: $db,
+            $table: $db.securityEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $StaffCredentialsTableManager
+    extends
+        RootTableManager<
+          _$PosDatabase,
+          StaffCredentials,
+          StaffCredential,
+          $StaffCredentialsFilterComposer,
+          $StaffCredentialsOrderingComposer,
+          $StaffCredentialsAnnotationComposer,
+          $StaffCredentialsCreateCompanionBuilder,
+          $StaffCredentialsUpdateCompanionBuilder,
+          (StaffCredential, $StaffCredentialsReferences),
+          StaffCredential,
+          PrefetchHooks Function({
+            bool authSessionsRefs,
+            bool securityEventsRefs,
+          })
+        > {
+  $StaffCredentialsTableManager(_$PosDatabase db, StaffCredentials table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $StaffCredentialsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $StaffCredentialsOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $StaffCredentialsAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> displayName = const Value.absent(),
+                Value<String> role = const Value.absent(),
+                Value<int> enabled = const Value.absent(),
+                Value<int> revision = const Value.absent(),
+                Value<String> pinFingerprint = const Value.absent(),
+                Value<String> saltBase64 = const Value.absent(),
+                Value<String> hashBase64 = const Value.absent(),
+                Value<int> verifierVersion = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => StaffCredentialsCompanion(
+                id: id,
+                displayName: displayName,
+                role: role,
+                enabled: enabled,
+                revision: revision,
+                pinFingerprint: pinFingerprint,
+                saltBase64: saltBase64,
+                hashBase64: hashBase64,
+                verifierVersion: verifierVersion,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String displayName,
+                required String role,
+                required int enabled,
+                required int revision,
+                required String pinFingerprint,
+                required String saltBase64,
+                required String hashBase64,
+                required int verifierVersion,
+                Value<int> rowid = const Value.absent(),
+              }) => StaffCredentialsCompanion.insert(
+                id: id,
+                displayName: displayName,
+                role: role,
+                enabled: enabled,
+                revision: revision,
+                pinFingerprint: pinFingerprint,
+                saltBase64: saltBase64,
+                hashBase64: hashBase64,
+                verifierVersion: verifierVersion,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<StaffCredentials, StaffCredential>(table),
+                  $StaffCredentialsReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({authSessionsRefs = false, securityEventsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (authSessionsRefs) db.authSessions,
+                    if (securityEventsRefs) db.securityEvents,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (authSessionsRefs)
+                        await $_getPrefetchedData<
+                          StaffCredential,
+                          StaffCredentials,
+                          AuthSession
+                        >(
+                          currentTable: table,
+                          referencedTable: $StaffCredentialsReferences
+                              ._authSessionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $StaffCredentialsReferences(
+                                db,
+                                table,
+                                p0,
+                              ).authSessionsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.staffId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (securityEventsRefs)
+                        await $_getPrefetchedData<
+                          StaffCredential,
+                          StaffCredentials,
+                          SecurityEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $StaffCredentialsReferences
+                              ._securityEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $StaffCredentialsReferences(
+                                db,
+                                table,
+                                p0,
+                              ).securityEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.staffId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $StaffCredentialsProcessedTableManager =
+    ProcessedTableManager<
+      _$PosDatabase,
+      StaffCredentials,
+      StaffCredential,
+      $StaffCredentialsFilterComposer,
+      $StaffCredentialsOrderingComposer,
+      $StaffCredentialsAnnotationComposer,
+      $StaffCredentialsCreateCompanionBuilder,
+      $StaffCredentialsUpdateCompanionBuilder,
+      (StaffCredential, $StaffCredentialsReferences),
+      StaffCredential,
+      PrefetchHooks Function({bool authSessionsRefs, bool securityEventsRefs})
+    >;
+typedef $InstallationSecurityCreateCompanionBuilder =
+    InstallationSecurityCompanion Function({
+      Value<int> singleton,
+      required String keyId,
+      required String terminalId,
+      required String setupIntent,
+      required String setupHash,
+      required String firstManagerId,
+      required String primaryCashierId,
+      required int recoveryAcknowledgedAtMs,
+    });
+typedef $InstallationSecurityUpdateCompanionBuilder =
+    InstallationSecurityCompanion Function({
+      Value<int> singleton,
+      Value<String> keyId,
+      Value<String> terminalId,
+      Value<String> setupIntent,
+      Value<String> setupHash,
+      Value<String> firstManagerId,
+      Value<String> primaryCashierId,
+      Value<int> recoveryAcknowledgedAtMs,
+    });
+
+final class $InstallationSecurityReferences
+    extends
+        BaseReferences<
+          _$PosDatabase,
+          InstallationSecurity,
+          InstallationSecurityData
+        > {
+  $InstallationSecurityReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static StaffCredentials _firstManagerIdTable(_$PosDatabase db) =>
+      db.staffCredentials.createAlias(
+        'installation_security__first_manager_id__staff_credentials__id',
+      );
+
+  $StaffCredentialsProcessedTableManager get firstManagerId {
+    final $_column = $_itemColumn<String>('first_manager_id')!;
+
+    final manager = $StaffCredentialsTableManager(
+      $_db,
+      $_db.staffCredentials,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_firstManagerIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static StaffCredentials _primaryCashierIdTable(_$PosDatabase db) =>
+      db.staffCredentials.createAlias(
+        'installation_security__primary_cashier_id__staff_credentials__id',
+      );
+
+  $StaffCredentialsProcessedTableManager get primaryCashierId {
+    final $_column = $_itemColumn<String>('primary_cashier_id')!;
+
+    final manager = $StaffCredentialsTableManager(
+      $_db,
+      $_db.staffCredentials,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_primaryCashierIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $InstallationSecurityFilterComposer
+    extends Composer<_$PosDatabase, InstallationSecurity> {
+  $InstallationSecurityFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get singleton => $composableBuilder(
+    column: $table.singleton,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get keyId => $composableBuilder(
+    column: $table.keyId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get setupIntent => $composableBuilder(
+    column: $table.setupIntent,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get setupHash => $composableBuilder(
+    column: $table.setupHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recoveryAcknowledgedAtMs => $composableBuilder(
+    column: $table.recoveryAcknowledgedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $StaffCredentialsFilterComposer get firstManagerId {
+    final $StaffCredentialsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.firstManagerId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsFilterComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $StaffCredentialsFilterComposer get primaryCashierId {
+    final $StaffCredentialsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.primaryCashierId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsFilterComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $InstallationSecurityOrderingComposer
+    extends Composer<_$PosDatabase, InstallationSecurity> {
+  $InstallationSecurityOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get singleton => $composableBuilder(
+    column: $table.singleton,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get keyId => $composableBuilder(
+    column: $table.keyId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get setupIntent => $composableBuilder(
+    column: $table.setupIntent,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get setupHash => $composableBuilder(
+    column: $table.setupHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recoveryAcknowledgedAtMs => $composableBuilder(
+    column: $table.recoveryAcknowledgedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $StaffCredentialsOrderingComposer get firstManagerId {
+    final $StaffCredentialsOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.firstManagerId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsOrderingComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $StaffCredentialsOrderingComposer get primaryCashierId {
+    final $StaffCredentialsOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.primaryCashierId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsOrderingComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $InstallationSecurityAnnotationComposer
+    extends Composer<_$PosDatabase, InstallationSecurity> {
+  $InstallationSecurityAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get singleton =>
+      $composableBuilder(column: $table.singleton, builder: (column) => column);
+
+  GeneratedColumn<String> get keyId =>
+      $composableBuilder(column: $table.keyId, builder: (column) => column);
+
+  GeneratedColumn<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get setupIntent => $composableBuilder(
+    column: $table.setupIntent,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get setupHash =>
+      $composableBuilder(column: $table.setupHash, builder: (column) => column);
+
+  GeneratedColumn<int> get recoveryAcknowledgedAtMs => $composableBuilder(
+    column: $table.recoveryAcknowledgedAtMs,
+    builder: (column) => column,
+  );
+
+  $StaffCredentialsAnnotationComposer get firstManagerId {
+    final $StaffCredentialsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.firstManagerId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsAnnotationComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $StaffCredentialsAnnotationComposer get primaryCashierId {
+    final $StaffCredentialsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.primaryCashierId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsAnnotationComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $InstallationSecurityTableManager
+    extends
+        RootTableManager<
+          _$PosDatabase,
+          InstallationSecurity,
+          InstallationSecurityData,
+          $InstallationSecurityFilterComposer,
+          $InstallationSecurityOrderingComposer,
+          $InstallationSecurityAnnotationComposer,
+          $InstallationSecurityCreateCompanionBuilder,
+          $InstallationSecurityUpdateCompanionBuilder,
+          (InstallationSecurityData, $InstallationSecurityReferences),
+          InstallationSecurityData,
+          PrefetchHooks Function({bool firstManagerId, bool primaryCashierId})
+        > {
+  $InstallationSecurityTableManager(
+    _$PosDatabase db,
+    InstallationSecurity table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $InstallationSecurityFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $InstallationSecurityOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $InstallationSecurityAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> singleton = const Value.absent(),
+                Value<String> keyId = const Value.absent(),
+                Value<String> terminalId = const Value.absent(),
+                Value<String> setupIntent = const Value.absent(),
+                Value<String> setupHash = const Value.absent(),
+                Value<String> firstManagerId = const Value.absent(),
+                Value<String> primaryCashierId = const Value.absent(),
+                Value<int> recoveryAcknowledgedAtMs = const Value.absent(),
+              }) => InstallationSecurityCompanion(
+                singleton: singleton,
+                keyId: keyId,
+                terminalId: terminalId,
+                setupIntent: setupIntent,
+                setupHash: setupHash,
+                firstManagerId: firstManagerId,
+                primaryCashierId: primaryCashierId,
+                recoveryAcknowledgedAtMs: recoveryAcknowledgedAtMs,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> singleton = const Value.absent(),
+                required String keyId,
+                required String terminalId,
+                required String setupIntent,
+                required String setupHash,
+                required String firstManagerId,
+                required String primaryCashierId,
+                required int recoveryAcknowledgedAtMs,
+              }) => InstallationSecurityCompanion.insert(
+                singleton: singleton,
+                keyId: keyId,
+                terminalId: terminalId,
+                setupIntent: setupIntent,
+                setupHash: setupHash,
+                firstManagerId: firstManagerId,
+                primaryCashierId: primaryCashierId,
+                recoveryAcknowledgedAtMs: recoveryAcknowledgedAtMs,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<InstallationSecurity, InstallationSecurityData>(
+                    table,
+                  ),
+                  $InstallationSecurityReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({firstManagerId = false, primaryCashierId = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (firstManagerId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.firstManagerId,
+                                    referencedTable:
+                                        $InstallationSecurityReferences
+                                            ._firstManagerIdTable(db),
+                                    referencedColumn:
+                                        $InstallationSecurityReferences
+                                            ._firstManagerIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+                        if (primaryCashierId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.primaryCashierId,
+                                    referencedTable:
+                                        $InstallationSecurityReferences
+                                            ._primaryCashierIdTable(db),
+                                    referencedColumn:
+                                        $InstallationSecurityReferences
+                                            ._primaryCashierIdTable(db)
+                                            .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $InstallationSecurityProcessedTableManager =
+    ProcessedTableManager<
+      _$PosDatabase,
+      InstallationSecurity,
+      InstallationSecurityData,
+      $InstallationSecurityFilterComposer,
+      $InstallationSecurityOrderingComposer,
+      $InstallationSecurityAnnotationComposer,
+      $InstallationSecurityCreateCompanionBuilder,
+      $InstallationSecurityUpdateCompanionBuilder,
+      (InstallationSecurityData, $InstallationSecurityReferences),
+      InstallationSecurityData,
+      PrefetchHooks Function({bool firstManagerId, bool primaryCashierId})
+    >;
+typedef $AuthAttemptLimitsCreateCompanionBuilder =
+    AuthAttemptLimitsCompanion Function({
+      required String scope,
+      required String subjectId,
+      required int windowStartMs,
+      required int lastSeenMs,
+      required int reservedCount,
+      Value<int> rowid,
+    });
+typedef $AuthAttemptLimitsUpdateCompanionBuilder =
+    AuthAttemptLimitsCompanion Function({
+      Value<String> scope,
+      Value<String> subjectId,
+      Value<int> windowStartMs,
+      Value<int> lastSeenMs,
+      Value<int> reservedCount,
+      Value<int> rowid,
+    });
+
+class $AuthAttemptLimitsFilterComposer
+    extends Composer<_$PosDatabase, AuthAttemptLimits> {
+  $AuthAttemptLimitsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subjectId => $composableBuilder(
+    column: $table.subjectId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get windowStartMs => $composableBuilder(
+    column: $table.windowStartMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastSeenMs => $composableBuilder(
+    column: $table.lastSeenMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get reservedCount => $composableBuilder(
+    column: $table.reservedCount,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $AuthAttemptLimitsOrderingComposer
+    extends Composer<_$PosDatabase, AuthAttemptLimits> {
+  $AuthAttemptLimitsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get scope => $composableBuilder(
+    column: $table.scope,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subjectId => $composableBuilder(
+    column: $table.subjectId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get windowStartMs => $composableBuilder(
+    column: $table.windowStartMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastSeenMs => $composableBuilder(
+    column: $table.lastSeenMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get reservedCount => $composableBuilder(
+    column: $table.reservedCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $AuthAttemptLimitsAnnotationComposer
+    extends Composer<_$PosDatabase, AuthAttemptLimits> {
+  $AuthAttemptLimitsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get scope =>
+      $composableBuilder(column: $table.scope, builder: (column) => column);
+
+  GeneratedColumn<String> get subjectId =>
+      $composableBuilder(column: $table.subjectId, builder: (column) => column);
+
+  GeneratedColumn<int> get windowStartMs => $composableBuilder(
+    column: $table.windowStartMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastSeenMs => $composableBuilder(
+    column: $table.lastSeenMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get reservedCount => $composableBuilder(
+    column: $table.reservedCount,
+    builder: (column) => column,
+  );
+}
+
+class $AuthAttemptLimitsTableManager
+    extends
+        RootTableManager<
+          _$PosDatabase,
+          AuthAttemptLimits,
+          AuthAttemptLimit,
+          $AuthAttemptLimitsFilterComposer,
+          $AuthAttemptLimitsOrderingComposer,
+          $AuthAttemptLimitsAnnotationComposer,
+          $AuthAttemptLimitsCreateCompanionBuilder,
+          $AuthAttemptLimitsUpdateCompanionBuilder,
+          (
+            AuthAttemptLimit,
+            BaseReferences<_$PosDatabase, AuthAttemptLimits, AuthAttemptLimit>,
+          ),
+          AuthAttemptLimit,
+          PrefetchHooks Function()
+        > {
+  $AuthAttemptLimitsTableManager(_$PosDatabase db, AuthAttemptLimits table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $AuthAttemptLimitsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $AuthAttemptLimitsOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $AuthAttemptLimitsAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> scope = const Value.absent(),
+                Value<String> subjectId = const Value.absent(),
+                Value<int> windowStartMs = const Value.absent(),
+                Value<int> lastSeenMs = const Value.absent(),
+                Value<int> reservedCount = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AuthAttemptLimitsCompanion(
+                scope: scope,
+                subjectId: subjectId,
+                windowStartMs: windowStartMs,
+                lastSeenMs: lastSeenMs,
+                reservedCount: reservedCount,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String scope,
+                required String subjectId,
+                required int windowStartMs,
+                required int lastSeenMs,
+                required int reservedCount,
+                Value<int> rowid = const Value.absent(),
+              }) => AuthAttemptLimitsCompanion.insert(
+                scope: scope,
+                subjectId: subjectId,
+                windowStartMs: windowStartMs,
+                lastSeenMs: lastSeenMs,
+                reservedCount: reservedCount,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<AuthAttemptLimits, AuthAttemptLimit>(table),
+                  BaseReferences<
+                    _$PosDatabase,
+                    AuthAttemptLimits,
+                    AuthAttemptLimit
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $AuthAttemptLimitsProcessedTableManager =
+    ProcessedTableManager<
+      _$PosDatabase,
+      AuthAttemptLimits,
+      AuthAttemptLimit,
+      $AuthAttemptLimitsFilterComposer,
+      $AuthAttemptLimitsOrderingComposer,
+      $AuthAttemptLimitsAnnotationComposer,
+      $AuthAttemptLimitsCreateCompanionBuilder,
+      $AuthAttemptLimitsUpdateCompanionBuilder,
+      (
+        AuthAttemptLimit,
+        BaseReferences<_$PosDatabase, AuthAttemptLimits, AuthAttemptLimit>,
+      ),
+      AuthAttemptLimit,
+      PrefetchHooks Function()
+    >;
+typedef $AuthSessionsCreateCompanionBuilder =
+    AuthSessionsCompanion Function({
+      required String id,
+      required String tokenHash,
+      required String staffId,
+      required int credentialRevision,
+      required String roleAtIssue,
+      required String terminalId,
+      required int issuedAtMs,
+      required int lastSeenMs,
+      required int expiresAtMs,
+      required int revoked,
+      Value<int> rowid,
+    });
+typedef $AuthSessionsUpdateCompanionBuilder =
+    AuthSessionsCompanion Function({
+      Value<String> id,
+      Value<String> tokenHash,
+      Value<String> staffId,
+      Value<int> credentialRevision,
+      Value<String> roleAtIssue,
+      Value<String> terminalId,
+      Value<int> issuedAtMs,
+      Value<int> lastSeenMs,
+      Value<int> expiresAtMs,
+      Value<int> revoked,
+      Value<int> rowid,
+    });
+
+final class $AuthSessionsReferences
+    extends BaseReferences<_$PosDatabase, AuthSessions, AuthSession> {
+  $AuthSessionsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static StaffCredentials _staffIdTable(_$PosDatabase db) => db.staffCredentials
+      .createAlias('auth_sessions__staff_id__staff_credentials__id');
+
+  $StaffCredentialsProcessedTableManager get staffId {
+    final $_column = $_itemColumn<String>('staff_id')!;
+
+    final manager = $StaffCredentialsTableManager(
+      $_db,
+      $_db.staffCredentials,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_staffIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<SecurityEvents, List<SecurityEvent>>
+  _securityEventsRefsTable(_$PosDatabase db) => MultiTypedResultKey.fromTable(
+    db.securityEvents,
+    aliasName: 'auth_sessions__id__security_events__session_id',
+  );
+
+  $SecurityEventsProcessedTableManager get securityEventsRefs {
+    final manager = $SecurityEventsTableManager(
+      $_db,
+      $_db.securityEvents,
+    ).filter((f) => f.sessionId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_securityEventsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $AuthSessionsFilterComposer
+    extends Composer<_$PosDatabase, AuthSessions> {
+  $AuthSessionsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tokenHash => $composableBuilder(
+    column: $table.tokenHash,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get credentialRevision => $composableBuilder(
+    column: $table.credentialRevision,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get roleAtIssue => $composableBuilder(
+    column: $table.roleAtIssue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get issuedAtMs => $composableBuilder(
+    column: $table.issuedAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastSeenMs => $composableBuilder(
+    column: $table.lastSeenMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get expiresAtMs => $composableBuilder(
+    column: $table.expiresAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get revoked => $composableBuilder(
+    column: $table.revoked,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $StaffCredentialsFilterComposer get staffId {
+    final $StaffCredentialsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.staffId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsFilterComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> securityEventsRefs(
+    Expression<bool> Function($SecurityEventsFilterComposer f) f,
+  ) {
+    final $SecurityEventsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.securityEvents,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $SecurityEventsFilterComposer(
+            $db: $db,
+            $table: $db.securityEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $AuthSessionsOrderingComposer
+    extends Composer<_$PosDatabase, AuthSessions> {
+  $AuthSessionsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tokenHash => $composableBuilder(
+    column: $table.tokenHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get credentialRevision => $composableBuilder(
+    column: $table.credentialRevision,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get roleAtIssue => $composableBuilder(
+    column: $table.roleAtIssue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get issuedAtMs => $composableBuilder(
+    column: $table.issuedAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lastSeenMs => $composableBuilder(
+    column: $table.lastSeenMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get expiresAtMs => $composableBuilder(
+    column: $table.expiresAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get revoked => $composableBuilder(
+    column: $table.revoked,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $StaffCredentialsOrderingComposer get staffId {
+    final $StaffCredentialsOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.staffId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsOrderingComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $AuthSessionsAnnotationComposer
+    extends Composer<_$PosDatabase, AuthSessions> {
+  $AuthSessionsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get tokenHash =>
+      $composableBuilder(column: $table.tokenHash, builder: (column) => column);
+
+  GeneratedColumn<int> get credentialRevision => $composableBuilder(
+    column: $table.credentialRevision,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get roleAtIssue => $composableBuilder(
+    column: $table.roleAtIssue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get issuedAtMs => $composableBuilder(
+    column: $table.issuedAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lastSeenMs => $composableBuilder(
+    column: $table.lastSeenMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get expiresAtMs => $composableBuilder(
+    column: $table.expiresAtMs,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get revoked =>
+      $composableBuilder(column: $table.revoked, builder: (column) => column);
+
+  $StaffCredentialsAnnotationComposer get staffId {
+    final $StaffCredentialsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.staffId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsAnnotationComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> securityEventsRefs<T extends Object>(
+    Expression<T> Function($SecurityEventsAnnotationComposer a) f,
+  ) {
+    final $SecurityEventsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.securityEvents,
+      getReferencedColumn: (t) => t.sessionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $SecurityEventsAnnotationComposer(
+            $db: $db,
+            $table: $db.securityEvents,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $AuthSessionsTableManager
+    extends
+        RootTableManager<
+          _$PosDatabase,
+          AuthSessions,
+          AuthSession,
+          $AuthSessionsFilterComposer,
+          $AuthSessionsOrderingComposer,
+          $AuthSessionsAnnotationComposer,
+          $AuthSessionsCreateCompanionBuilder,
+          $AuthSessionsUpdateCompanionBuilder,
+          (AuthSession, $AuthSessionsReferences),
+          AuthSession,
+          PrefetchHooks Function({bool staffId, bool securityEventsRefs})
+        > {
+  $AuthSessionsTableManager(_$PosDatabase db, AuthSessions table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $AuthSessionsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $AuthSessionsOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $AuthSessionsAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> tokenHash = const Value.absent(),
+                Value<String> staffId = const Value.absent(),
+                Value<int> credentialRevision = const Value.absent(),
+                Value<String> roleAtIssue = const Value.absent(),
+                Value<String> terminalId = const Value.absent(),
+                Value<int> issuedAtMs = const Value.absent(),
+                Value<int> lastSeenMs = const Value.absent(),
+                Value<int> expiresAtMs = const Value.absent(),
+                Value<int> revoked = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => AuthSessionsCompanion(
+                id: id,
+                tokenHash: tokenHash,
+                staffId: staffId,
+                credentialRevision: credentialRevision,
+                roleAtIssue: roleAtIssue,
+                terminalId: terminalId,
+                issuedAtMs: issuedAtMs,
+                lastSeenMs: lastSeenMs,
+                expiresAtMs: expiresAtMs,
+                revoked: revoked,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String tokenHash,
+                required String staffId,
+                required int credentialRevision,
+                required String roleAtIssue,
+                required String terminalId,
+                required int issuedAtMs,
+                required int lastSeenMs,
+                required int expiresAtMs,
+                required int revoked,
+                Value<int> rowid = const Value.absent(),
+              }) => AuthSessionsCompanion.insert(
+                id: id,
+                tokenHash: tokenHash,
+                staffId: staffId,
+                credentialRevision: credentialRevision,
+                roleAtIssue: roleAtIssue,
+                terminalId: terminalId,
+                issuedAtMs: issuedAtMs,
+                lastSeenMs: lastSeenMs,
+                expiresAtMs: expiresAtMs,
+                revoked: revoked,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<AuthSessions, AuthSession>(table),
+                  $AuthSessionsReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({staffId = false, securityEventsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (securityEventsRefs) db.securityEvents,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (staffId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.staffId,
+                                    referencedTable: $AuthSessionsReferences
+                                        ._staffIdTable(db),
+                                    referencedColumn: $AuthSessionsReferences
+                                        ._staffIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (securityEventsRefs)
+                        await $_getPrefetchedData<
+                          AuthSession,
+                          AuthSessions,
+                          SecurityEvent
+                        >(
+                          currentTable: table,
+                          referencedTable: $AuthSessionsReferences
+                              ._securityEventsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $AuthSessionsReferences(
+                                db,
+                                table,
+                                p0,
+                              ).securityEventsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.sessionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $AuthSessionsProcessedTableManager =
+    ProcessedTableManager<
+      _$PosDatabase,
+      AuthSessions,
+      AuthSession,
+      $AuthSessionsFilterComposer,
+      $AuthSessionsOrderingComposer,
+      $AuthSessionsAnnotationComposer,
+      $AuthSessionsCreateCompanionBuilder,
+      $AuthSessionsUpdateCompanionBuilder,
+      (AuthSession, $AuthSessionsReferences),
+      AuthSession,
+      PrefetchHooks Function({bool staffId, bool securityEventsRefs})
+    >;
+typedef $SecurityEventsCreateCompanionBuilder =
+    SecurityEventsCompanion Function({
+      required String id,
+      required String kind,
+      Value<String?> staffId,
+      Value<String?> sessionId,
+      required String terminalId,
+      required int occurredAtMs,
+      Value<int> rowid,
+    });
+typedef $SecurityEventsUpdateCompanionBuilder =
+    SecurityEventsCompanion Function({
+      Value<String> id,
+      Value<String> kind,
+      Value<String?> staffId,
+      Value<String?> sessionId,
+      Value<String> terminalId,
+      Value<int> occurredAtMs,
+      Value<int> rowid,
+    });
+
+final class $SecurityEventsReferences
+    extends BaseReferences<_$PosDatabase, SecurityEvents, SecurityEvent> {
+  $SecurityEventsReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static StaffCredentials _staffIdTable(_$PosDatabase db) => db.staffCredentials
+      .createAlias('security_events__staff_id__staff_credentials__id');
+
+  $StaffCredentialsProcessedTableManager? get staffId {
+    final $_column = $_itemColumn<String>('staff_id');
+    if ($_column == null) return null;
+    final manager = $StaffCredentialsTableManager(
+      $_db,
+      $_db.staffCredentials,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_staffIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static AuthSessions _sessionIdTable(_$PosDatabase db) => db.authSessions
+      .createAlias('security_events__session_id__auth_sessions__id');
+
+  $AuthSessionsProcessedTableManager? get sessionId {
+    final $_column = $_itemColumn<String>('session_id');
+    if ($_column == null) return null;
+    final manager = $AuthSessionsTableManager(
+      $_db,
+      $_db.authSessions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $SecurityEventsFilterComposer
+    extends Composer<_$PosDatabase, SecurityEvents> {
+  $SecurityEventsFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get occurredAtMs => $composableBuilder(
+    column: $table.occurredAtMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $StaffCredentialsFilterComposer get staffId {
+    final $StaffCredentialsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.staffId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsFilterComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $AuthSessionsFilterComposer get sessionId {
+    final $AuthSessionsFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.authSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $AuthSessionsFilterComposer(
+            $db: $db,
+            $table: $db.authSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $SecurityEventsOrderingComposer
+    extends Composer<_$PosDatabase, SecurityEvents> {
+  $SecurityEventsOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get occurredAtMs => $composableBuilder(
+    column: $table.occurredAtMs,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $StaffCredentialsOrderingComposer get staffId {
+    final $StaffCredentialsOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.staffId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsOrderingComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $AuthSessionsOrderingComposer get sessionId {
+    final $AuthSessionsOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.authSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $AuthSessionsOrderingComposer(
+            $db: $db,
+            $table: $db.authSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $SecurityEventsAnnotationComposer
+    extends Composer<_$PosDatabase, SecurityEvents> {
+  $SecurityEventsAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get terminalId => $composableBuilder(
+    column: $table.terminalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get occurredAtMs => $composableBuilder(
+    column: $table.occurredAtMs,
+    builder: (column) => column,
+  );
+
+  $StaffCredentialsAnnotationComposer get staffId {
+    final $StaffCredentialsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.staffId,
+      referencedTable: $db.staffCredentials,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $StaffCredentialsAnnotationComposer(
+            $db: $db,
+            $table: $db.staffCredentials,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $AuthSessionsAnnotationComposer get sessionId {
+    final $AuthSessionsAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.sessionId,
+      referencedTable: $db.authSessions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $AuthSessionsAnnotationComposer(
+            $db: $db,
+            $table: $db.authSessions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $SecurityEventsTableManager
+    extends
+        RootTableManager<
+          _$PosDatabase,
+          SecurityEvents,
+          SecurityEvent,
+          $SecurityEventsFilterComposer,
+          $SecurityEventsOrderingComposer,
+          $SecurityEventsAnnotationComposer,
+          $SecurityEventsCreateCompanionBuilder,
+          $SecurityEventsUpdateCompanionBuilder,
+          (SecurityEvent, $SecurityEventsReferences),
+          SecurityEvent,
+          PrefetchHooks Function({bool staffId, bool sessionId})
+        > {
+  $SecurityEventsTableManager(_$PosDatabase db, SecurityEvents table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $SecurityEventsFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $SecurityEventsOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $SecurityEventsAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> kind = const Value.absent(),
+                Value<String?> staffId = const Value.absent(),
+                Value<String?> sessionId = const Value.absent(),
+                Value<String> terminalId = const Value.absent(),
+                Value<int> occurredAtMs = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SecurityEventsCompanion(
+                id: id,
+                kind: kind,
+                staffId: staffId,
+                sessionId: sessionId,
+                terminalId: terminalId,
+                occurredAtMs: occurredAtMs,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String kind,
+                Value<String?> staffId = const Value.absent(),
+                Value<String?> sessionId = const Value.absent(),
+                required String terminalId,
+                required int occurredAtMs,
+                Value<int> rowid = const Value.absent(),
+              }) => SecurityEventsCompanion.insert(
+                id: id,
+                kind: kind,
+                staffId: staffId,
+                sessionId: sessionId,
+                terminalId: terminalId,
+                occurredAtMs: occurredAtMs,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<SecurityEvents, SecurityEvent>(table),
+                  $SecurityEventsReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({staffId = false, sessionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (staffId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.staffId,
+                                referencedTable: $SecurityEventsReferences
+                                    ._staffIdTable(db),
+                                referencedColumn: $SecurityEventsReferences
+                                    ._staffIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+                    if (sessionId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.sessionId,
+                                referencedTable: $SecurityEventsReferences
+                                    ._sessionIdTable(db),
+                                referencedColumn: $SecurityEventsReferences
+                                    ._sessionIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $SecurityEventsProcessedTableManager =
+    ProcessedTableManager<
+      _$PosDatabase,
+      SecurityEvents,
+      SecurityEvent,
+      $SecurityEventsFilterComposer,
+      $SecurityEventsOrderingComposer,
+      $SecurityEventsAnnotationComposer,
+      $SecurityEventsCreateCompanionBuilder,
+      $SecurityEventsUpdateCompanionBuilder,
+      (SecurityEvent, $SecurityEventsReferences),
+      SecurityEvent,
+      PrefetchHooks Function({bool staffId, bool sessionId})
+    >;
 
 class $PosDatabaseManager {
   final _$PosDatabase _db;
@@ -3684,4 +8438,14 @@ class $PosDatabaseManager {
       $CommandVersionsTableManager(_db, _db.commandVersions);
   $AuditEventsTableManager get auditEvents =>
       $AuditEventsTableManager(_db, _db.auditEvents);
+  $StaffCredentialsTableManager get staffCredentials =>
+      $StaffCredentialsTableManager(_db, _db.staffCredentials);
+  $InstallationSecurityTableManager get installationSecurity =>
+      $InstallationSecurityTableManager(_db, _db.installationSecurity);
+  $AuthAttemptLimitsTableManager get authAttemptLimits =>
+      $AuthAttemptLimitsTableManager(_db, _db.authAttemptLimits);
+  $AuthSessionsTableManager get authSessions =>
+      $AuthSessionsTableManager(_db, _db.authSessions);
+  $SecurityEventsTableManager get securityEvents =>
+      $SecurityEventsTableManager(_db, _db.securityEvents);
 }

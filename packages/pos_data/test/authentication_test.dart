@@ -121,6 +121,29 @@ void main() {
     expect(cashier.toString(), isNot(contains(cashier.token)));
   });
 
+  test('database uniqueness covers active credentials and disabled accounts cannot sign in', () async {
+    final receipt = await setup();
+    await expectLater(db.customStatement("UPDATE staff_credentials SET pin_fingerprint = (SELECT pin_fingerprint FROM staff_credentials WHERE role = 'manager') WHERE role = 'cashier'"), throwsA(anything));
+    await db.customStatement("UPDATE staff_credentials SET enabled = 0 WHERE role = 'cashier'");
+    await db.customStatement("UPDATE staff_credentials SET pin_fingerprint = (SELECT pin_fingerprint FROM staff_credentials WHERE role = 'manager') WHERE role = 'cashier'");
+    await expectLater(auth.signIn(staffId: receipt.cashierId, pin: '0638'), throwsA(isA<AuthenticationRejected>()));
+    expect(await count('auth_sessions'), 0);
+  });
+
+  test('malformed PIN attempts are rejected generically and charged', () async {
+    final receipt = await setup();
+    await expectLater(auth.signIn(staffId: receipt.cashierId, pin: 'not-a-pin'), throwsA(isA<AuthenticationRejected>()));
+    expect((await db.customSelect('SELECT reserved_count FROM auth_attempt_limits').get()).every((r) => r.read<int>('reserved_count') == 1), true);
+  });
+
+  test('absolute lifetime expires even when the session was recently active', () async {
+    final receipt = await setup();
+    final session = await auth.signIn(staffId: receipt.cashierId, pin: '0638');
+    clock.time = clock.time.add(AuthenticationService.maximumSessionLifetime);
+    await db.customStatement('UPDATE auth_sessions SET last_seen_ms = ?', [clock.time.subtract(const Duration(seconds: 1)).millisecondsSinceEpoch]);
+    await expectLater(auth.authorize(session.token, Capability.confirmCheckout), throwsA(isA<AuthenticationRejected>()));
+  });
+
   test('five wrong attempts persist across reopen and block correct PIN until cooldown', () async {
     final receipt = await setup();
     for (var i = 0; i < 5; i++) {

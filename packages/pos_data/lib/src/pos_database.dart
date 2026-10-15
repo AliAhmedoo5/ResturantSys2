@@ -136,22 +136,25 @@ class PosDatabase extends _$PosDatabase {
         await transaction(() async {
           if (from == 1) await migrator.createTable(schemaUpgrades);
           if (from < 3) {
-          final collisions = await customSelect(
-            "SELECT name FROM sqlite_master WHERE name IN ('idempotency_commands', 'command_versions', 'audit_events', 'audit_events_no_update', 'audit_events_no_delete', 'commands_no_update', 'commands_no_delete')",
-          ).get();
-          if (collisions.isNotEmpty) {
-            throw StateError(
-              'Command schema already exists in an old database.',
-            );
-          }
-          await migrator.createTable(idempotencyCommands);
-          await migrator.createTable(commandVersions);
-          await migrator.createTable(auditEvents);
+            final collisions = await customSelect(
+              "SELECT name FROM sqlite_master WHERE name IN ('idempotency_commands', 'command_versions', 'audit_events', 'audit_events_no_update', 'audit_events_no_delete', 'commands_no_update', 'commands_no_delete')",
+            ).get();
+            if (collisions.isNotEmpty) {
+              throw StateError(
+                'Command schema already exists in an old database.',
+              );
+            }
+            await migrator.createTable(idempotencyCommands);
+            await migrator.createTable(commandVersions);
+            await migrator.createTable(auditEvents);
           }
           final authCollisions = await customSelect(
             "SELECT name FROM sqlite_master WHERE name IN ('staff_credentials', 'installation_security', 'auth_attempt_limits', 'auth_sessions', 'security_events', 'active_pin_fingerprints', 'security_events_no_update', 'security_events_no_delete', 'security_events_no_replace')",
           ).get();
-          if (authCollisions.isNotEmpty) throw StateError('Authentication schema already exists in an old database.');
+          if (authCollisions.isNotEmpty)
+            throw StateError(
+              'Authentication schema already exists in an old database.',
+            );
           await migrator.createTable(staffCredentials);
           await migrator.createTable(installationSecurity);
           await migrator.createTable(authAttemptLimits);
@@ -219,12 +222,25 @@ class PosDatabase extends _$PosDatabase {
       await customSelect(
         'SELECT id, command_id, entity_type, entity_id, event_type, actor_id, session_id, approver_id, business_day_id, terminal_id, app_version, reason, before_json, after_json, created_at_utc FROM audit_events LIMIT 1',
       ).get();
-      await customSelect('SELECT id, display_name, role, enabled, revision, pin_fingerprint, salt_base64, hash_base64, verifier_version FROM staff_credentials LIMIT 1').get();
-      await customSelect('SELECT singleton, key_id, terminal_id, setup_intent, setup_hash, first_manager_id, primary_cashier_id, recovery_acknowledged_at_ms FROM installation_security LIMIT 1').get();
-      await customSelect('SELECT scope, subject_id, window_start_ms, last_seen_ms, reserved_count FROM auth_attempt_limits LIMIT 1').get();
-      await customSelect('SELECT id, token_hash, staff_id, credential_revision, role_at_issue, terminal_id, issued_at_ms, last_seen_ms, expires_at_ms, revoked FROM auth_sessions LIMIT 1').get();
-      await customSelect('SELECT id, kind, staff_id, session_id, terminal_id, occurred_at_ms FROM security_events LIMIT 1').get();
-      if ((await customSelect("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'active_pin_fingerprints'").get()).length != 1) {
+      await customSelect(
+        'SELECT id, display_name, role, enabled, revision, pin_fingerprint, salt_base64, hash_base64, verifier_version FROM staff_credentials LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT singleton, key_id, terminal_id, setup_intent, setup_hash, first_manager_id, primary_cashier_id, recovery_acknowledged_at_ms FROM installation_security LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT scope, subject_id, window_start_ms, last_seen_ms, reserved_count FROM auth_attempt_limits LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT id, token_hash, staff_id, credential_revision, role_at_issue, terminal_id, issued_at_ms, last_seen_ms, expires_at_ms, revoked FROM auth_sessions LIMIT 1',
+      ).get();
+      await customSelect(
+        'SELECT id, kind, staff_id, session_id, terminal_id, occurred_at_ms FROM security_events LIMIT 1',
+      ).get();
+      if ((await customSelect(
+            "SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'active_pin_fingerprints'",
+          ).get()).length !=
+          1) {
         throw StateError('Missing active credential uniqueness guard.');
       }
       for (final trigger in allSchemaEntities.whereType<Trigger>()) {

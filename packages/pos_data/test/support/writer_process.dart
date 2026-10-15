@@ -18,11 +18,22 @@ Future<void> main(List<String> arguments) async {
   try {
     final database = await PosDatabase.open(File(arguments.first));
     if (arguments.length == 2 && arguments[1] == 'auth-after-reservation') {
-      final installation = await database.customSelect('SELECT * FROM installation_security').getSingle();
-      final key = await InstallationKeyStore(File(arguments.first).parent).load(expectedKeyId: installation.read<String>('key_id'));
-      final auth = AuthenticationService(database: database, key: key,
-        terminalId: installation.read<String>('terminal_id'), clock: ExitAfterReservationClock());
-      await auth.signIn(staffId: installation.read<String>('primary_cashier_id'), pin: '7777');
+      final installation = await database
+          .customSelect('SELECT * FROM installation_security')
+          .getSingle();
+      final key = await InstallationKeyStore(
+        File(arguments.first).parent,
+      ).load(expectedKeyId: installation.read<String>('key_id'));
+      final auth = AuthenticationService(
+        database: database,
+        key: key,
+        terminalId: installation.read<String>('terminal_id'),
+        clock: ExitAfterReservationClock(),
+      );
+      await auth.signIn(
+        staffId: installation.read<String>('primary_cashier_id'),
+        pin: '7777',
+      );
       throw StateError('Crash fixture did not exit at the intended boundary.');
     }
     if (arguments.length == 2) {

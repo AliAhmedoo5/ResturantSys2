@@ -79,9 +79,16 @@ void createV3(File file) {
     old.execute("INSERT INTO database_metadata VALUES (1, 'crunch-cartel')");
     old.execute('PRAGMA application_id = ${PosDatabase.applicationId}');
     old.execute('PRAGMA user_version = 3');
-    old.execute('INSERT INTO idempotency_commands VALUES (?, ?, ?, ?, ?)',
-      ['old-command', 'fixture', 'a' * 64, '{"saved":true}', '2026-10-14T00:00:00.000Z']);
-  } finally { old.close(); }
+    old.execute('INSERT INTO idempotency_commands VALUES (?, ?, ?, ?, ?)', [
+      'old-command',
+      'fixture',
+      'a' * 64,
+      '{"saved":true}',
+      '2026-10-14T00:00:00.000Z',
+    ]);
+  } finally {
+    old.close();
+  }
 }
 
 void main() {
@@ -345,7 +352,10 @@ void main() {
           'synthetic-old-backup',
         );
         expect(rows.last.read<int>('from_version'), 2);
-        expect(rows.last.read<int>('to_version'), PosDatabase.currentSchemaVersion);
+        expect(
+          rows.last.read<int>('to_version'),
+          PosDatabase.currentSchemaVersion,
+        );
         final backup = await PosDatabase.verifySnapshot(
           Directory(rows.last.read<String>('backup_directory')),
         );
@@ -411,38 +421,87 @@ void main() {
     await expectLater(PosDatabase.open(file), throwsA(anything));
   });
 
-  test('frozen v3 upgrade preserves command results and creates matching authentication schema', () async {
-    createV3(file);
-    final db = await PosDatabase.open(file, migrationBackup: policy());
-    final fresh = await PosDatabase.open(File('${root.path}/fresh.db'));
-    try {
-      expect((await db.customSelect('SELECT result_json FROM idempotency_commands').getSingle()).read<String>('result_json'), '{"saved":true}');
-      final upgrade = await db.customSelect('SELECT * FROM schema_upgrades').getSingle();
-      expect(upgrade.read<int>('from_version'), 3);
-      expect((await PosDatabase.verifySnapshot(Directory(upgrade.read<String>('backup_directory')))).schemaVersion, 3);
-      for (final table in ['staff_credentials', 'installation_security', 'auth_attempt_limits', 'auth_sessions', 'security_events']) {
-        expect(await db.customSelect('SELECT * FROM $table').get(), isEmpty);
-        expect((await db.customSelect('PRAGMA table_info($table)').get()).map((r) => r.data),
-          (await fresh.customSelect('PRAGMA table_info($table)').get()).map((r) => r.data));
+  test(
+    'frozen v3 upgrade preserves command results and creates matching authentication schema',
+    () async {
+      createV3(file);
+      final db = await PosDatabase.open(file, migrationBackup: policy());
+      final fresh = await PosDatabase.open(File('${root.path}/fresh.db'));
+      try {
+        expect(
+          (await db
+                  .customSelect('SELECT result_json FROM idempotency_commands')
+                  .getSingle())
+              .read<String>('result_json'),
+          '{"saved":true}',
+        );
+        final upgrade = await db
+            .customSelect('SELECT * FROM schema_upgrades')
+            .getSingle();
+        expect(upgrade.read<int>('from_version'), 3);
+        expect(
+          (await PosDatabase.verifySnapshot(
+            Directory(upgrade.read<String>('backup_directory')),
+          )).schemaVersion,
+          3,
+        );
+        for (final table in [
+          'staff_credentials',
+          'installation_security',
+          'auth_attempt_limits',
+          'auth_sessions',
+          'security_events',
+        ]) {
+          expect(await db.customSelect('SELECT * FROM $table').get(), isEmpty);
+          expect(
+            (await db.customSelect('PRAGMA table_info($table)').get()).map(
+              (r) => r.data,
+            ),
+            (await fresh.customSelect('PRAGMA table_info($table)').get()).map(
+              (r) => r.data,
+            ),
+          );
+        }
+        expect(
+          await db.customSelect('PRAGMA foreign_key_check').get(),
+          isEmpty,
+        );
+      } finally {
+        await db.close();
+        await fresh.close();
       }
-      expect(await db.customSelect('PRAGMA foreign_key_check').get(), isEmpty);
-    } finally { await db.close(); await fresh.close(); }
-  });
+    },
+  );
 
-  test('v3 needs backup and auth collision preserves old database and snapshot', () async {
-    createV3(file);
-    await expectLater(PosDatabase.open(file), throwsA(isA<MigrationBackupRequiredException>()));
-    final raw = sqlite3.open(file.path);
-    raw.execute('CREATE TABLE staff_credentials (note TEXT)');
-    raw.execute("INSERT INTO staff_credentials VALUES ('preserve')");
-    raw.close();
-    await expectLater(PosDatabase.open(file, migrationBackup: policy()), throwsA(isA<DatabaseMigrationException>()));
-    expect(version(file), 3);
-    expect(await backups.list().length, 1);
-    final after = sqlite3.open(file.path, mode: OpenMode.readOnly);
-    try { expect(after.select('SELECT note FROM staff_credentials').single['note'], 'preserve'); }
-    finally { after.close(); }
-  });
+  test(
+    'v3 needs backup and auth collision preserves old database and snapshot',
+    () async {
+      createV3(file);
+      await expectLater(
+        PosDatabase.open(file),
+        throwsA(isA<MigrationBackupRequiredException>()),
+      );
+      final raw = sqlite3.open(file.path);
+      raw.execute('CREATE TABLE staff_credentials (note TEXT)');
+      raw.execute("INSERT INTO staff_credentials VALUES ('preserve')");
+      raw.close();
+      await expectLater(
+        PosDatabase.open(file, migrationBackup: policy()),
+        throwsA(isA<DatabaseMigrationException>()),
+      );
+      expect(version(file), 3);
+      expect(await backups.list().length, 1);
+      final after = sqlite3.open(file.path, mode: OpenMode.readOnly);
+      try {
+        expect(
+          after.select('SELECT note FROM staff_credentials').single['note'],
+          'preserve',
+        );
+      } finally {
+        after.close();
+      }
+    },
+  );
 
   test('missing active PIN uniqueness index refuses reopening', () async {
     final db = await PosDatabase.open(file);
