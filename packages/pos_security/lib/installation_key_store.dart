@@ -10,6 +10,7 @@ import 'package:win32/win32.dart';
 import 'key_recovery.dart';
 import 'pin_security.dart';
 import 'windows_key_protection.dart';
+import 'windows_private_storage.dart';
 
 final class InstallationKeyExists implements Exception {
   const InstallationKeyExists();
@@ -128,8 +129,12 @@ final class LoadedInstallationKey {
 /// Existing caller-provisioned local directory only. ACL/known-folder setup is
 /// a separate prerequisite; this seam must not be used as that security check.
 final class InstallationKeyStore {
-  InstallationKeyStore(this.directory);
+  InstallationKeyStore(this.directory) : _verifyStorage = null;
+  InstallationKeyStore.privateStorage(WindowsPrivateStorage storage)
+    : directory = storage.directory,
+      _verifyStorage = storage.verify;
   final Directory directory;
+  final void Function()? _verifyStorage;
   static const fileName = 'installation-key.json';
 
   Future<void> initialize(PreparedInstallationKey prepared) async {
@@ -232,6 +237,7 @@ final class InstallationKeyStore {
   }
 
   Future<Directory> _directory() async {
+    _verifyStorage?.call();
     if (!Platform.isWindows)
       throw UnsupportedError('Windows key storage is required.');
     void validate(Directory value) {
