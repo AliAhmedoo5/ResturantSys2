@@ -68,12 +68,15 @@ final class WindowsPrivateStorage {
           ..length = sizeOf<_SecurityAttributes>()
           ..descriptor = descriptor
           ..inheritHandle = 0;
+        // Resolve the lazy FFI binding before creation: resolving it afterwards
+        // can overwrite the thread's last-error value on the first failed call.
+        final lastError = _lastError;
         if (_createDirectory(
                   directory.path.toNativeUtf16(allocator: arena),
                   attributes,
                 ) ==
                 0 &&
-            _lastError() != 183) {
+            lastError() != 183) {
           throw const PrivateStorageFailure();
         }
       } finally {
