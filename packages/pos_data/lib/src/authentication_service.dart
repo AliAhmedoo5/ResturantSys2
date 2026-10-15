@@ -40,6 +40,7 @@ final class StaffIdentity {
   final StaffRole role;
 }
 
+/// Acknowledges a completed setup request only; never proof of authentication.
 final class SetupReceipt {
   const SetupReceipt(this.managerId, this.cashierId);
   final String managerId, cashierId;
@@ -98,6 +99,14 @@ final class AuthenticationService {
     _name(cashierName);
     if (!recoveryAcknowledged)
       throw StateError('Secure and acknowledge the recovery code first.');
+    // Retry comparison deliberately excludes PINs and their fingerprints. A
+    // completed setup returns its receipt without testing supplied secrets, so
+    // this unauthenticated path cannot become a fast PIN-verification oracle.
+    final hash = _hash(jsonEncode([
+      'setup-public/v1', terminalId, key.keyId, managerName.trim(), cashierName.trim(),
+    ]));
+    final previous = await _installation();
+    if (previous != null) return _setupRetry(previous, intentKey, hash);
     PinSecurity.validate(managerPin);
     PinSecurity.validate(cashierPin, primaryCashier: true);
     if (managerPin != managerConfirmation ||
@@ -107,18 +116,6 @@ final class AuthenticationService {
     final managerFingerprint = await key.fingerprint(managerPin);
     final cashierFingerprint = await key.fingerprint(cashierPin);
     if (managerFingerprint == cashierFingerprint) throw const DuplicatePin();
-    final hash = _hash(
-      jsonEncode([
-        terminalId,
-        key.keyId,
-        managerName.trim(),
-        managerFingerprint,
-        cashierName.trim(),
-        cashierFingerprint,
-      ]),
-    );
-    final previous = await _installation();
-    if (previous != null) return _setupRetry(previous, intentKey, hash);
     final managerVerifier = await PinSecurity.createVerifier(managerPin);
     final cashierVerifier = await PinSecurity.createVerifier(
       cashierPin,

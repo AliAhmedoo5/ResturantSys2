@@ -47,8 +47,8 @@ void main() {
   });
   Future<SetupReceipt> setup({AuthenticationService? using, String intent = 'first-setup',
     String manager = '724915', String cashier = '0638', bool acknowledged = true,
-    String? confirmation}) => (using ?? auth).initialize(intentKey: intent,
-      managerName: 'Fixture Manager', managerPin: manager, managerConfirmation: confirmation ?? manager,
+    String? confirmation, String managerName = 'Fixture Manager'}) => (using ?? auth).initialize(intentKey: intent,
+      managerName: managerName, managerPin: manager, managerConfirmation: confirmation ?? manager,
       cashierName: 'Fixture Cashier', cashierPin: cashier, cashierConfirmation: cashier,
       recoveryAcknowledged: acknowledged);
   Future<int> count(String table) async =>
@@ -87,9 +87,14 @@ void main() {
   });
 
   test('setup retry conflicts cannot replace accounts', () async {
-    await setup();
+    final original = await setup();
     await expectLater(setup(intent: 'other'), throwsA(isA<OnboardingConflict>()));
-    await expectLater(setup(manager: '826437'), throwsA(isA<OnboardingConflict>()));
+    await expectLater(setup(managerName: 'Changed public name'), throwsA(isA<OnboardingConflict>()));
+    final retry = await setup(manager: 'not-tested', confirmation: 'not-tested-either', cashier: 'not-tested');
+    expect(retry.managerId, original.managerId);
+    expect(await count('auth_sessions'), 0);
+    expect(await count('auth_attempt_limits'), 0);
+    expect((await auth.signIn(staffId: original.managerId, pin: '724915')).staff.id, original.managerId);
     expect(await count('staff_credentials'), 2);
   });
 
