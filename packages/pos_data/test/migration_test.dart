@@ -519,14 +519,29 @@ void main() {
       final raw = sqlite3.open(file.path);
       raw.execute(damage);
       raw.close();
-      await expectLater(PosDatabase.open(file, migrationBackup: policy()), throwsA(isA<DatabaseMigrationException>()));
+      await expectLater(
+        PosDatabase.open(file, migrationBackup: policy()),
+        throwsA(isA<DatabaseMigrationException>()),
+      );
       expect(version(file), 3);
       expect(await backups.list().length, 1);
       final after = sqlite3.open(file.path, mode: OpenMode.readOnly);
       try {
-        expect(after.select("SELECT name FROM sqlite_master WHERE name = 'staff_credentials'"), isEmpty);
-        expect(after.select('SELECT intent_key FROM idempotency_commands').single['intent_key'], 'old-command');
-      } finally { after.close(); }
+        expect(
+          after.select(
+            "SELECT name FROM sqlite_master WHERE name = 'staff_credentials'",
+          ),
+          isEmpty,
+        );
+        expect(
+          after
+              .select('SELECT intent_key FROM idempotency_commands')
+              .single['intent_key'],
+          'old-command',
+        );
+      } finally {
+        after.close();
+      }
     });
   }
 }

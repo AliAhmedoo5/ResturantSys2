@@ -102,9 +102,15 @@ final class AuthenticationService {
     // Retry comparison deliberately excludes PINs and their fingerprints. A
     // completed setup returns its receipt without testing supplied secrets, so
     // this unauthenticated path cannot become a fast PIN-verification oracle.
-    final hash = _hash(jsonEncode([
-      'setup-public/v1', terminalId, key.keyId, managerName.trim(), cashierName.trim(),
-    ]));
+    final hash = _hash(
+      jsonEncode([
+        'setup-public/v1',
+        terminalId,
+        key.keyId,
+        managerName.trim(),
+        cashierName.trim(),
+      ]),
+    );
     final previous = await _installation();
     if (previous != null) return _setupRetry(previous, intentKey, hash);
     PinSecurity.validate(managerPin);
