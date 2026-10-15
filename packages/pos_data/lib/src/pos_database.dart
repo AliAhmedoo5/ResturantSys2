@@ -179,6 +179,7 @@ class PosDatabase extends _$PosDatabase {
               verified.sha256Hex,
             ],
           );
+          await _checkRequiredSchema();
           await _checkIntegrity();
           // Persist version and schema together; Drift's later version write is
           // idempotent. A process exit cannot leave new tables labelled v1.
@@ -209,6 +210,11 @@ class PosDatabase extends _$PosDatabase {
       if ((await customSelect('PRAGMA foreign_key_check').get()).isNotEmpty) {
         throw StateError('Database foreign key check failed.');
       }
+      await _checkRequiredSchema();
+    },
+  );
+
+  Future<void> _checkRequiredSchema() async {
       // Also fail closed if a v2 database has lost its technical history table.
       await customSelect(
         'SELECT to_version, from_version, applied_at_utc, app_version, backup_directory, backup_sha256 FROM schema_upgrades LIMIT 1',
@@ -251,8 +257,7 @@ class PosDatabase extends _$PosDatabase {
         if (stored.length != 1)
           throw StateError('Missing immutable-history guard.');
       }
-    },
-  );
+  }
 
   Future<void> _recordMigrationFailure(Future<void> Function() upgrade) async {
     try {
