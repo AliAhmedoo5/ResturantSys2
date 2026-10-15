@@ -96,6 +96,9 @@ $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
 
   test('broadened permissions fail verification without repair', () async {
     final storage = WindowsPrivateStorage.provisionIn(parent);
+    final store = InstallationKeyStore.privateStorage(storage);
+    final prepared = await PreparedInstallationKey.create();
+    await store.initialize(prepared);
     await powershell(r'''
 $acl = Get-Acl -LiteralPath $env:CRUNCH_TEST_PATH
 $sid = [Security.Principal.SecurityIdentifier]::new('S-1-1-0')
@@ -104,6 +107,10 @@ $acl.AddAccessRule($rule)
 Set-Acl -LiteralPath $env:CRUNCH_TEST_PATH -AclObject $acl
 ''', storage.directory.path);
     expect(storage.verify, throwsA(isA<PrivateStorageFailure>()));
+    await expectLater(
+      store.load(expectedKeyId: prepared.keyId),
+      throwsA(isA<PrivateStorageFailure>()),
+    );
     expect(
       () => WindowsPrivateStorage.provisionIn(parent),
       throwsA(isA<PrivateStorageFailure>()),
