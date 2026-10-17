@@ -187,8 +187,10 @@ final class InstallationKeyStore {
   Future<LoadedInstallationKey> loadPendingSetup() async {
     final canonical = await _directory();
     final file = File.fromUri(canonical.uri.resolve(fileName));
-    if (await FileSystemEntity.type(file.path, followLinks: false) != FileSystemEntityType.file ||
-        await file.length() > 32768) throw const InstallationKeyInvalid();
+    if (await FileSystemEntity.type(file.path, followLinks: false) !=
+            FileSystemEntityType.file ||
+        await file.length() > 32768)
+      throw const InstallationKeyInvalid();
     try {
       final data = jsonDecode(await file.readAsString());
       if (data is! Map<String, dynamic> || data['keyId'] is! String) {

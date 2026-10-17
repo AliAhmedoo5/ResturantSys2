@@ -11,9 +11,13 @@ import 'migration_backup.dart';
 import 'pos_database.dart';
 
 final class AccessOverview {
-  AccessOverview({required this.configured, required this.pendingKey,
-    required this.storagePath, required this.backupPath, required List<StaffIdentity> profiles})
-    : profiles = List.unmodifiable(profiles);
+  AccessOverview({
+    required this.configured,
+    required this.pendingKey,
+    required this.storagePath,
+    required this.backupPath,
+    required List<StaffIdentity> profiles,
+  }) : profiles = List.unmodifiable(profiles);
   final bool configured, pendingKey;
   final String storagePath, backupPath;
   final List<StaffIdentity> profiles;
@@ -36,7 +40,8 @@ final class WorkspaceAccess {
 final class AccessStorageFailure implements Exception {
   const AccessStorageFailure();
   @override
-  String toString() => 'Installation storage needs recovery. Existing files were not replaced.';
+  String toString() =>
+      'Installation storage needs recovery. Existing files were not replaced.';
 }
 
 /// Serial application boundary. The controller awaits each operation before
@@ -44,11 +49,19 @@ final class AccessStorageFailure implements Exception {
 abstract interface class AccessRepository {
   Future<AccessOverview> open();
   Future<RecoveryInformation> prepareRecovery();
-  Future<AccessOverview> finishSetup({required String managerName,
-    required String managerPin, required String managerConfirmation,
-    required String cashierName, required String cashierPin,
-    required String cashierConfirmation, required bool recoveryAcknowledged});
-  Future<WorkspaceAccess> signIn({required String staffId, required String pin});
+  Future<AccessOverview> finishSetup({
+    required String managerName,
+    required String managerPin,
+    required String managerConfirmation,
+    required String cashierName,
+    required String cashierPin,
+    required String cashierConfirmation,
+    required bool recoveryAcknowledged,
+  });
+  Future<WorkspaceAccess> signIn({
+    required String staffId,
+    required String pin,
+  });
   Future<WorkspaceAccess> workspace({bool recordActivity = false});
   Future<void> lock();
   Future<void> close();
@@ -70,33 +83,61 @@ final class WindowsAccessRepository implements AccessRepository {
   bool _configured = false;
   static const databaseName = 'crunch-cartel.db';
 
-  InstallationKeyStore get _store => InstallationKeyStore.privateStorage(_storage!);
-  Directory get _backups => Directory.fromUri(_storage!.directory.uri.resolve('backups/'));
+  InstallationKeyStore get _store =>
+      InstallationKeyStore.privateStorage(_storage!);
+  Directory get _backups =>
+      Directory.fromUri(_storage!.directory.uri.resolve('backups/'));
 
   @override
   Future<AccessOverview> open() async {
     await close();
     try {
-      _storage = parent == null ? WindowsPrivateStorage.open() : WindowsPrivateStorage.provisionIn(parent!);
+      _storage = parent == null
+          ? WindowsPrivateStorage.open()
+          : WindowsPrivateStorage.provisionIn(parent!);
       final file = File.fromUri(_storage!.directory.uri.resolve(databaseName));
-      final keyFile = File.fromUri(_storage!.directory.uri.resolve(InstallationKeyStore.fileName));
-      final keyExists = await FileSystemEntity.type(keyFile.path, followLinks: false) != FileSystemEntityType.notFound;
+      final keyFile = File.fromUri(
+        _storage!.directory.uri.resolve(InstallationKeyStore.fileName),
+      );
+      final keyExists =
+          await FileSystemEntity.type(keyFile.path, followLinks: false) !=
+          FileSystemEntityType.notFound;
       if (keyExists && !await file.exists()) throw const AccessStorageFailure();
-      final backupType = await FileSystemEntity.type(_backups.path, followLinks: false);
+      final backupType = await FileSystemEntity.type(
+        _backups.path,
+        followLinks: false,
+      );
       if (backupType == FileSystemEntityType.notFound) await _backups.create();
-      if (await FileSystemEntity.type(_backups.path, followLinks: false) != FileSystemEntityType.directory ||
-          (await _backups.resolveSymbolicLinks()).toLowerCase() != _backups.absolute.path.replaceAll(RegExp(r'[\\/]+$'), '').toLowerCase()) {
+      if (await FileSystemEntity.type(_backups.path, followLinks: false) !=
+              FileSystemEntityType.directory ||
+          _normalizedPath(await _backups.resolveSymbolicLinks()) !=
+              _normalizedPath(_backups.absolute.path)) {
         throw const AccessStorageFailure();
       }
-      _database = await PosDatabase.open(file, migrationBackup: MigrationBackup(directory: _backups, appVersion: '0.3.0'));
-      final installation = await _database!.customSelect('SELECT * FROM installation_security WHERE singleton = 1').getSingleOrNull();
+      _database = await PosDatabase.open(
+        file,
+        migrationBackup: MigrationBackup(
+          directory: _backups,
+          appVersion: '0.3.0',
+        ),
+      );
+      final installation = await _database!
+          .customSelect(
+            'SELECT * FROM installation_security WHERE singleton = 1',
+          )
+          .getSingleOrNull();
       if (installation != null) {
-        _key = await _store.load(expectedKeyId: installation.read<String>('key_id'));
+        _key = await _store.load(
+          expectedKeyId: installation.read<String>('key_id'),
+        );
         _terminal = installation.read<String>('terminal_id');
         _configured = true;
         _bindAuthentication();
       } else {
-        if ((await _database!.customSelect('SELECT id FROM staff_credentials LIMIT 1').get()).isNotEmpty) {
+        if ((await _database!
+                .customSelect('SELECT id FROM staff_credentials LIMIT 1')
+                .get())
+            .isNotEmpty) {
           throw const AccessStorageFailure();
         }
         if (keyExists) _key = await _store.loadPendingSetup();
@@ -116,27 +157,41 @@ final class WindowsAccessRepository implements AccessRepository {
     if (_configured) throw const OnboardingConflict();
     if (_key != null) return const RecoveryInformation();
     _prepared ??= await PreparedInstallationKey.create();
-    return RecoveryInformation(code: _prepared!.recoveryCode, envelope: _prepared!.recoveryEnvelope);
+    return RecoveryInformation(
+      code: _prepared!.recoveryCode,
+      envelope: _prepared!.recoveryEnvelope,
+    );
   }
 
   @override
-  Future<AccessOverview> finishSetup({required String managerName,
-    required String managerPin, required String managerConfirmation,
-    required String cashierName, required String cashierPin,
-    required String cashierConfirmation, required bool recoveryAcknowledged}) async {
+  Future<AccessOverview> finishSetup({
+    required String managerName,
+    required String managerPin,
+    required String managerConfirmation,
+    required String cashierName,
+    required String cashierPin,
+    required String cashierConfirmation,
+    required bool recoveryAcknowledged,
+  }) async {
     _verify();
     if (_configured) throw const OnboardingConflict();
-    if (!recoveryAcknowledged) throw StateError('Save and acknowledge recovery information first.');
+    if (!recoveryAcknowledged)
+      throw StateError('Save and acknowledge recovery information first.');
     for (final name in [managerName, cashierName]) {
-      if (name.trim().isEmpty || name.trim().length > 100 || name.contains('\u0000')) throw ArgumentError('Enter a staff name of 1–100 characters.');
+      if (name.trim().isEmpty ||
+          name.trim().length > 100 ||
+          name.contains('\u0000'))
+        throw ArgumentError('Enter a staff name of 1–100 characters.');
     }
     PinSecurity.validate(managerPin);
     PinSecurity.validate(cashierPin, primaryCashier: true);
-    if (managerPin != managerConfirmation || cashierPin != cashierConfirmation) throw ArgumentError('PIN confirmation does not match.');
+    if (managerPin != managerConfirmation || cashierPin != cashierConfirmation)
+      throw ArgumentError('PIN confirmation does not match.');
     if (managerPin == cashierPin) throw const DuplicatePin();
     if (_key == null) {
       final prepared = _prepared;
-      if (prepared == null) throw StateError('Prepare recovery information first.');
+      if (prepared == null)
+        throw StateError('Prepare recovery information first.');
       try {
         await _store.initialize(prepared);
       } on InstallationKeyExists {
@@ -146,17 +201,26 @@ final class WindowsAccessRepository implements AccessRepository {
       _key = await _store.load(expectedKeyId: prepared.keyId);
     }
     _bindAuthentication();
-    await _auth!.initialize(intentKey: _intent!, managerName: managerName,
-      managerPin: managerPin, managerConfirmation: managerConfirmation,
-      cashierName: cashierName, cashierPin: cashierPin,
-      cashierConfirmation: cashierConfirmation, recoveryAcknowledged: true);
+    await _auth!.initialize(
+      intentKey: _intent!,
+      managerName: managerName,
+      managerPin: managerPin,
+      managerConfirmation: managerConfirmation,
+      cashierName: cashierName,
+      cashierPin: cashierPin,
+      cashierConfirmation: cashierConfirmation,
+      recoveryAcknowledged: true,
+    );
     _configured = true;
     _prepared = null;
     return _overview();
   }
 
   @override
-  Future<WorkspaceAccess> signIn({required String staffId, required String pin}) async {
+  Future<WorkspaceAccess> signIn({
+    required String staffId,
+    required String pin,
+  }) async {
     _verify();
     if (!_configured || _session != null) throw const AuthenticationRejected();
     _session = await _auth!.signIn(staffId: staffId, pin: pin);
@@ -169,10 +233,15 @@ final class WindowsAccessRepository implements AccessRepository {
     final session = _session;
     if (session == null) throw const AuthenticationRejected();
     final staff = recordActivity
-      ? await _auth!.authorize(session.token, Capability.lockOwnSession)
-      : await _auth!.inspectSession(session.token);
+        ? await _auth!.authorize(session.token, Capability.lockOwnSession)
+        : await _auth!.inspectSession(session.token);
     final overview = await _overview();
-    return WorkspaceAccess(staff, hasEnabledCashier: overview.profiles.any((staff) => staff.role == StaffRole.cashier));
+    return WorkspaceAccess(
+      staff,
+      hasEnabledCashier: overview.profiles.any(
+        (staff) => staff.role == StaffRole.cashier,
+      ),
+    );
   }
 
   @override
@@ -189,18 +258,43 @@ final class WindowsAccessRepository implements AccessRepository {
   }
 
   Future<AccessOverview> _overview() async {
-    final rows = await _database!.customSelect('SELECT id, display_name, role FROM staff_credentials WHERE enabled = 1 ORDER BY role DESC, display_name, id').get();
-    return AccessOverview(configured: _configured, pendingKey: !_configured && _key != null,
-      storagePath: _storage!.directory.path, backupPath: _backups.path,
-      profiles: rows.map((row) => StaffIdentity(row.read<String>('id'), row.read<String>('display_name'), StaffRole.values.byName(row.read<String>('role')))).toList());
+    final rows = await _database!
+        .customSelect(
+          'SELECT id, display_name, role FROM staff_credentials WHERE enabled = 1 ORDER BY role DESC, display_name, id',
+        )
+        .get();
+    return AccessOverview(
+      configured: _configured,
+      pendingKey: !_configured && _key != null,
+      storagePath: _storage!.directory.path,
+      backupPath: _backups.path,
+      profiles: rows
+          .map(
+            (row) => StaffIdentity(
+              row.read<String>('id'),
+              row.read<String>('display_name'),
+              StaffRole.values.byName(row.read<String>('role')),
+            ),
+          )
+          .toList(),
+    );
   }
 
   void _verify() {
-    if (_database == null || _storage == null) throw const AccessStorageFailure();
+    if (_database == null || _storage == null)
+      throw const AccessStorageFailure();
     _storage!.verify();
   }
+
+  String _normalizedPath(String path) => path.replaceAll('/', r'\').replaceAll(RegExp(r'[\\]+$'), '').toLowerCase();
+
   void _bindAuthentication() {
-    _auth = AuthenticationService(database: _database!, key: _key!, terminalId: _terminal!, clock: clock);
+    _auth = AuthenticationService(
+      database: _database!,
+      key: _key!,
+      terminalId: _terminal!,
+      clock: clock,
+    );
   }
 
   @override
