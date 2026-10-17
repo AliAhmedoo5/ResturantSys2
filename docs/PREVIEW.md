@@ -14,6 +14,10 @@ Before creating accounts, save **both** the recovery code and encrypted key enve
 
 Create a Manager with a confirmed 4–8 digit PIN and a distinct primary Cashier with a confirmed four-digit PIN. Account creation does not sign anyone in. After sign-in, role-specific readiness pages explain the still-pending menu/recipes, Manager day opening and Cashier shift/opening-float steps. No fake saleable menu or enabled checkout is provided.
 
+## Verified access build
+
+Code commit `60ac91bbbb4b6933f7e1fb2339eca809f16be3ee` passed [Windows Actions](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/39030270595): strict dependency/format checks, analysis, nine app tests, domain checks, release compilation and native process startup. Download [Crunch-Cartel-Windows-preview-94](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/39030270595/artifacts/12099663162) while retained (30 days). The same run provides access and preview screenshots at 100%/125%/150% DPI. Real-file access integration is covered separately in [93 passing database tests](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/39030270588). Restaurant-hardware, full operational and recovery/restore acceptance remain pending.
+
 ## Earlier verified design preview
 
 Commit `185de7500a1dcde083a040985557270dfb25b99a` passed [Windows Actions](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38298514648), including analysis, four widget tests, domain regressions, release compilation and native startup. Download [Crunch-Cartel-Windows-preview-3](https://github.com/AliAhmedoo5/ResturantSys2/actions/runs/38298514648/artifacts/11770316522) while the artifact remains available (30-day retention). Screenshots from the same run cover welcome, counter, management and setup at 100%, 125% and 150% DPI. These checks verify the preview only; production and restaurant-hardware acceptance remain pending.
