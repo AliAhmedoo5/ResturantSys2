@@ -54,3 +54,5 @@ Record changed requirements, Actions run URL/commit, relevant passing checks, av
 ## Configuration needed before live use
 
 Manager/accountant must configure actual tax treatment, salary policies, supplier units, backup destinations/recovery, recipient consent and email settings. Default tax is inclusive 0%; it is not a legal determination. Automatic WhatsApp requires a separately chosen official provider; it does not block the initial email implementation. Kitchen printing, payment APIs, cloud sync and rider tracking are excluded.
+
+- Chunk 04c2a: implemented, awaiting hosted CI. Manager reauthentication shares durable account/device budgets with login, checks live role/session before and after PIN verification, and records security events without issuing a new session or extending idle expiry. Internal verification only; command-bound credential changes and UI remain pending. Regression cases cover successful audit/session lifetime, Cashier/revoked-session denial, restart-persistent shared throttling and audit rollback.

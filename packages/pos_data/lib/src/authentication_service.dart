@@ -164,11 +164,38 @@ final class AuthenticationService {
   Future<AuthenticatedSession> signIn({
     required String staffId,
     required String pin,
+  }) => _authenticate(staffId: staffId, pin: pin);
+
+  /// Verify the current Manager again without issuing another bearer token.
+  /// Uses the existing login security events, linked to the original session;
+  /// a reserved attempt with a session ID identifies reauthentication.
+  /// This is not a reusable authorization grant: privileged commands must still
+  /// bind reauthentication to their intent and recheck authorization on commit.
+  Future<void> reauthenticateManager(String token, String pin) async {
+    _outsideTransaction();
+    final staff = await inspectSession(token);
+    AccessPolicy.require(staff.role, Capability.manageCredentials);
+    await _authenticate(staffId: staff.id, pin: pin, existingToken: token);
+  }
+
+  Future<AuthenticatedSession> _authenticate({
+    required String staffId,
+    required String pin,
+    String? existingToken,
   }) async {
     _outsideTransaction();
     _identifier(staffId);
     final reservation = await database.transaction(() async {
       await _requireInstallation();
+      String? existingSessionId;
+      if (existingToken != null) {
+        final session = await _currentSession(existingToken);
+        existingSessionId = session.read<String>('id');
+        AccessPolicy.require(
+          StaffRole.values.byName(session.read<String>('role')),
+          Capability.manageCredentials,
+        );
+      }
       final now = _now();
       final staff = await _staff(staffId);
       final deviceWindow = await _reserve(
@@ -186,11 +213,13 @@ final class AuthenticationService {
         'login_attempt_reserved',
         now,
         staffId: staff?.read<String>('id'),
+        sessionId: existingSessionId,
       );
       return (
         staff: staff,
         deviceWindow: deviceWindow,
         accountWindow: accountWindow,
+        sessionId: existingSessionId,
         at: now,
       );
     });
@@ -229,8 +258,31 @@ final class AuthenticationService {
               staff.read<String>('hash_base64') ||
           now < reservation.at ||
           now - reservation.at >= attemptWindow.inMilliseconds) {
-        await _event('login_failed', now, staffId: current?.read<String>('id'));
+        await _event(
+          'login_failed',
+          now,
+          staffId: current?.read<String>('id'),
+          sessionId: reservation.sessionId,
+        );
         return null;
+      }
+      if (existingToken != null) {
+        final session = await _currentSession(existingToken);
+        final role = StaffRole.values.byName(session.read<String>('role'));
+        AccessPolicy.require(role, Capability.manageCredentials);
+        await _release('device', terminalId, reservation.deviceWindow);
+        await _release('account', staffId, reservation.accountWindow!);
+        await _event(
+          'login_succeeded',
+          now,
+          staffId: staffId,
+          sessionId: session.read<String>('id'),
+        );
+        return AuthenticatedSession._(
+          session.read<String>('id'),
+          existingToken,
+          StaffIdentity(staffId, current.read<String>('display_name'), role),
+        );
       }
       final id = ids.nextId();
       final token = '${ids.nextId()}${ids.nextId()}';
