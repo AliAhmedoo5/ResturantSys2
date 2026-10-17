@@ -75,6 +75,57 @@ void main() {
       (await db.customSelect('SELECT COUNT(*) AS n FROM $table').getSingle())
           .read<int>('n');
 
+  test('Manager reauthentication audits without creating or extending a session', () async {
+    final receipt = await setup();
+    final session = await auth.signIn(staffId: receipt.managerId, pin: '724915');
+    clock.time = clock.time.add(const Duration(minutes: 4));
+    await auth.reauthenticateManager(session.token, '724915');
+    expect(await count('auth_sessions'), 1);
+    final event = await db.customSelect(
+      "SELECT * FROM security_events WHERE kind = 'reauth_succeeded'",
+    ).getSingle();
+    expect(event.read<String>('staff_id'), receipt.managerId);
+    expect(event.read<String>('session_id'), session.id);
+    clock.time = clock.time.add(const Duration(minutes: 1));
+    await expectLater(auth.inspectSession(session.token), throwsA(isA<AuthenticationRejected>()));
+  });
+
+  test('Cashier and revoked sessions cannot reauthenticate as Manager', () async {
+    final receipt = await setup();
+    final cashier = await auth.signIn(staffId: receipt.cashierId, pin: '0638');
+    await expectLater(auth.reauthenticateManager(cashier.token, '724915'), throwsA(isA<AuthorizationDenied>()));
+    final manager = await auth.signIn(staffId: receipt.managerId, pin: '724915');
+    await auth.lockSession(manager.token);
+    await expectLater(auth.reauthenticateManager(manager.token, '724915'), throwsA(isA<AuthenticationRejected>()));
+    expect(await db.customSelect("SELECT * FROM security_events WHERE kind = 'reauth_attempt_reserved'").get(), isEmpty);
+  });
+
+  test('reauthentication failures share login budget across reopen', () async {
+    final receipt = await setup();
+    final session = await auth.signIn(staffId: receipt.managerId, pin: '724915');
+    for (var attempt = 0; attempt < AuthenticationService.accountAttemptLimit; attempt++) {
+      await expectLater(auth.reauthenticateManager(session.token, '0000'), throwsA(isA<AuthenticationRejected>()));
+    }
+    await db.close();
+    db = await PosDatabase.open(file);
+    auth = service();
+    await expectLater(auth.reauthenticateManager(session.token, '724915'), throwsA(isA<AuthenticationThrottled>()));
+    await expectLater(auth.signIn(staffId: receipt.managerId, pin: '724915'), throwsA(isA<AuthenticationThrottled>()));
+    expect(await count('auth_sessions'), 1);
+    expect((await db.customSelect("SELECT * FROM security_events WHERE kind = 'reauth_failed'").get()).length, 5);
+  });
+
+  test('reauthentication audit failure preserves committed attempt reservation', () async {
+    final receipt = await setup();
+    final session = await auth.signIn(staffId: receipt.managerId, pin: '724915');
+    await db.customStatement("CREATE TRIGGER reject_reauth BEFORE INSERT ON security_events WHEN NEW.kind = 'reauth_succeeded' BEGIN SELECT RAISE(ABORT, 'fixture'); END");
+    await expectLater(auth.reauthenticateManager(session.token, '724915'), throwsA(anything));
+    final budget = await db.customSelect("SELECT reserved_count FROM auth_attempt_limits WHERE scope = 'account'").getSingle();
+    expect(budget.read<int>('reserved_count'), 1);
+    expect(await count('auth_sessions'), 1);
+    expect(await db.customSelect("SELECT * FROM security_events WHERE kind = 'reauth_succeeded'").get(), isEmpty);
+  });
+
   test(
     'onboarding atomically persists distinct roles, key binding and one audit event',
     () async {
