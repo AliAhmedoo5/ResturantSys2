@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pos_data/pos_data.dart';
 import 'package:pos_domain/access_policy.dart';
+import 'access_screenshots.dart';
 
 final class FixtureRepository implements AccessRepository {
   bool configured = false, locked = true, expired = false, closed = false;
@@ -77,6 +78,8 @@ final class FixtureRepository implements AccessRepository {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(loadAccessFonts);
   test(
     'background validation never records activity and expiry removes workspace',
     () async {
@@ -123,14 +126,16 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final repository = FixtureRepository();
+      final captureKey = GlobalKey();
       await tester.pumpWidget(
         ProviderScope(
           overrides: [accessRepositoryProvider.overrideWithValue(repository)],
-          child: const CrunchCartelApp(),
+          child: RepaintBoundary(key: captureKey, child: const CrunchCartelApp()),
         ),
       );
       await tester.pumpAndSettle();
       expect(find.text('Make this your restaurant.'), findsOneWidget);
+      await captureAccess(tester, captureKey, 'setup', dpi);
       var next = find.widgetWithText(
         FilledButton,
         'Continue to staff profiles',
@@ -152,6 +157,9 @@ void main() {
         ),
         findsOneWidget,
       );
+      await tester.ensureVisible(find.text('Two profiles. Clear responsibilities.'));
+      await tester.pumpAndSettle();
+      await captureAccess(tester, captureKey, 'profiles', dpi);
       Future<void> fill(String label, String text) async {
         final field = find.widgetWithText(TextField, label);
         await tester.ensureVisible(field);
@@ -173,17 +181,32 @@ void main() {
       expect(repository.setupCount, 1);
       expect(repository.locked, true);
       expect(find.text('Your shift starts with you.'), findsOneWidget);
+      await captureAccess(tester, captureKey, 'login', dpi);
       await fill('PIN', '724915');
       await tester.ensureVisible(find.text('Sign in'));
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
       expect(find.text('MANAGER • Restaurant readiness'), findsOneWidget);
+      await captureAccess(tester, captureKey, 'manager', dpi);
       expect(find.textContaining('Billing unavailable'), findsNothing);
       await tester.ensureVisible(find.text('Switch to Cashier'));
       await tester.tap(find.text('Switch to Cashier'));
       await tester.pumpAndSettle();
       expect(repository.locked, true);
       expect(find.text('Your shift starts with you.'), findsOneWidget);
+      await tester.ensureVisible(find.byType(DropdownButtonFormField<String>));
+      await tester.tap(find.byType(DropdownButtonFormField<String>));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cashier Fixture · Cashier').last);
+      await tester.pumpAndSettle();
+      await fill('PIN', '0638');
+      await tester.ensureVisible(find.text('Sign in'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Sign in'));
+      await tester.pumpAndSettle();
+      expect(find.text('CASHIER • Counter readiness'), findsOneWidget);
+      expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Billing unavailable until readiness is complete')).onPressed, isNull);
+      await captureAccess(tester, captureKey, 'cashier', dpi);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pumpAndSettle();
