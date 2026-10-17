@@ -1,7 +1,7 @@
 name: crunch_cartel
 description: Crunch Cartel offline Windows restaurant POS.
 publish_to: none
-version: 0.2.0+2
+version: 0.3.0+3
 environment:
   sdk: '>=3.11.0 <4.0.0'
 dependencies:
@@ -11,6 +11,8 @@ dependencies:
   go_router: 18.0.2
   pos_domain:
     path: ../../packages/pos_domain
+  pos_data:
+    path: ../../packages/pos_data
 dev_dependencies:
   flutter_test:
     sdk: flutter

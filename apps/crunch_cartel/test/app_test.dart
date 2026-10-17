@@ -31,7 +31,12 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(const ProviderScope(child: CrunchCartelApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [initialRouteProvider.overrideWithValue('/')],
+        child: const CrunchCartelApp(),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('CRUNCH\nCARTEL'), findsNWidgets(2));
     expect(
@@ -72,7 +77,9 @@ void main() {
       tester.view.devicePixelRatio = dpi;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [initialRouteProvider.overrideWithValue('/')],
+      );
       addTearDown(container.dispose);
       final boundaryKey = GlobalKey();
       await tester.pumpWidget(

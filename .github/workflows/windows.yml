@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
   workflow_dispatch:
+    inputs:
+      refresh_lock:
+        description: Resolve an intentionally changed dependency manifest
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -34,7 +39,7 @@ jobs:
         run: ../../tool/brand_windows.ps1
       - name: Resolve dependencies
         run: |
-          flutter pub get --enforce-lockfile
+          if ('${{ inputs.refresh_lock }}' -eq 'true') { flutter pub get } else { flutter pub get --enforce-lockfile }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Format source on the hosted runner
         run: dart format lib test
@@ -50,8 +55,6 @@ jobs:
             !apps/crunch_cartel/windows/flutter/ephemeral
             apps/crunch_cartel/pubspec.lock
             apps/crunch_cartel/.metadata
-      - name: Enforce committed source formatting
-        run: git diff --exit-code -- lib test
       - name: Analyze
         run: flutter analyze --fatal-infos
       - name: Test navigation, disabled checkout and DPI layouts
@@ -91,6 +94,8 @@ jobs:
           }
       - name: Include preview instructions
         run: Copy-Item -LiteralPath ../../docs/PREVIEW.md -Destination build/windows/x64/runner/Release/README.md
+      - name: Enforce committed source formatting and dependency lock
+        run: git diff --exit-code -- lib test pubspec.lock
       - name: Upload complete Windows application bundle
         uses: actions/upload-artifact@v4
         with:

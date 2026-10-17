@@ -3,13 +3,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/preview/pages.dart';
+import '../features/access/access_page.dart';
 import 'shell.dart';
 import 'theme.dart';
 
+final initialRouteProvider = Provider<String>((ref) => '/access');
+
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
-    initialLocation: '/',
+    initialLocation: ref.watch(initialRouteProvider),
     routes: [
+      GoRoute(path: '/access', builder: (context, state) => const AccessPage()),
       ShellRoute(
         builder: (context, state, child) =>
             CartelShell(path: state.uri.path, child: child),
