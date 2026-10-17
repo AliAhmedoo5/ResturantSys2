@@ -111,8 +111,12 @@ final class WindowsAccessRepository implements AccessRepository {
       // Resolve the verified parent first: Windows temp/known-folder paths may
       // contain legitimate 8.3 aliases. Resolve only the child on the other side
       // so a redirected backup child still fails the comparison.
-      final canonicalParent = Directory(await _storage!.directory.resolveSymbolicLinks());
-      final expectedBackup = Directory.fromUri(canonicalParent.uri.resolve('backups/'));
+      final canonicalParent = Directory(
+        await _storage!.directory.resolveSymbolicLinks(),
+      );
+      final expectedBackup = Directory.fromUri(
+        canonicalParent.uri.resolve('backups/'),
+      );
       if (await FileSystemEntity.type(_backups.path, followLinks: false) !=
               FileSystemEntityType.directory ||
           _normalizedPath(await _backups.resolveSymbolicLinks()) !=

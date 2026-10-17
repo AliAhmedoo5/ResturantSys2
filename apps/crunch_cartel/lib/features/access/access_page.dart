@@ -171,10 +171,13 @@ class _AccessPageState extends ConsumerState<AccessPage>
       border: Border.all(color: CartelColors.line),
       borderRadius: BorderRadius.circular(12),
     ),
-    child: Material(color: Colors.transparent, child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: children,
-    )),
+    child: Material(
+      color: Colors.transparent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
+    ),
   );
   Widget field(
     String label,

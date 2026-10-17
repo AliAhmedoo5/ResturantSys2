@@ -130,7 +130,10 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [accessRepositoryProvider.overrideWithValue(repository)],
-          child: RepaintBoundary(key: captureKey, child: const CrunchCartelApp()),
+          child: RepaintBoundary(
+            key: captureKey,
+            child: const CrunchCartelApp(),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -157,7 +160,9 @@ void main() {
         ),
         findsOneWidget,
       );
-      await tester.ensureVisible(find.text('Two profiles. Clear responsibilities.'));
+      await tester.ensureVisible(
+        find.text('Two profiles. Clear responsibilities.'),
+      );
       await tester.pumpAndSettle();
       await captureAccess(tester, captureKey, 'profiles', dpi);
       Future<void> fill(String label, String text) async {
@@ -205,7 +210,17 @@ void main() {
       await tester.tap(find.text('Sign in'));
       await tester.pumpAndSettle();
       expect(find.text('CASHIER • Counter readiness'), findsOneWidget);
-      expect(tester.widget<FilledButton>(find.widgetWithText(FilledButton, 'Billing unavailable until readiness is complete')).onPressed, isNull);
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.widgetWithText(
+                FilledButton,
+                'Billing unavailable until readiness is complete',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
       await captureAccess(tester, captureKey, 'cashier', dpi);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
