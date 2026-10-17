@@ -262,6 +262,17 @@ final class AuthenticationService {
     return session;
   }
 
+  /// Check expiry and live credentials without extending idle lifetime. UI
+  /// polling must use this method; only real user activity should authorize.
+  Future<StaffIdentity> inspectSession(String token) => database.transaction(() async {
+    final session = await _currentSession(token);
+    return StaffIdentity(
+      session.read<String>('staff_id'),
+      session.read<String>('display_name'),
+      StaffRole.values.byName(session.read<String>('role')),
+    );
+  });
+
   /// Call inside the command coordinator authorization callback so permission,
   /// revision and transaction writes share the same database transaction.
   Future<StaffIdentity> authorize(

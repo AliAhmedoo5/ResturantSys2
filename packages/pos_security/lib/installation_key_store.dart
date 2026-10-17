@@ -181,6 +181,25 @@ final class InstallationKeyStore {
     }
   }
 
+  /// Only for interrupted onboarding after the caller has confirmed that the
+  /// database has neither installation metadata nor staff. Established databases
+  /// must always supply their persisted expected ID to load instead.
+  Future<LoadedInstallationKey> loadPendingSetup() async {
+    final canonical = await _directory();
+    final file = File.fromUri(canonical.uri.resolve(fileName));
+    if (await FileSystemEntity.type(file.path, followLinks: false) != FileSystemEntityType.file ||
+        await file.length() > 32768) throw const InstallationKeyInvalid();
+    try {
+      final data = jsonDecode(await file.readAsString());
+      if (data is! Map<String, dynamic> || data['keyId'] is! String) {
+        throw const InstallationKeyInvalid();
+      }
+      return await load(expectedKeyId: data['keyId'] as String);
+    } on FormatException {
+      throw const InstallationKeyInvalid();
+    }
+  }
+
   Future<LoadedInstallationKey> load({required String expectedKeyId}) async {
     _validateId(expectedKeyId);
     final canonical = await _directory();
