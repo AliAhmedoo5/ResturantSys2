@@ -167,6 +167,8 @@ final class AuthenticationService {
   }) => _authenticate(staffId: staffId, pin: pin);
 
   /// Verify the current Manager again without issuing another bearer token.
+  /// Uses the existing login security events, linked to the original session;
+  /// a reserved attempt with a session ID identifies reauthentication.
   /// This is not a reusable authorization grant: privileged commands must still
   /// bind reauthentication to their intent and recheck authorization on commit.
   Future<void> reauthenticateManager(String token, String pin) async {
@@ -206,14 +208,20 @@ final class AuthenticationService {
           ? null
           : await _reserve('account', staffId, accountAttemptLimit, now);
       await _event(
-        existingToken == null ? 'login_attempt_reserved' : 'reauth_attempt_reserved',
+        'login_attempt_reserved',
         now,
         staffId: staff?.read<String>('id'),
+        sessionId: existingToken == null
+            ? null
+            : (await _currentSession(existingToken)).read<String>('id'),
       );
       return (
         staff: staff,
         deviceWindow: deviceWindow,
         accountWindow: accountWindow,
+        sessionId: existingToken == null
+            ? null
+            : (await _currentSession(existingToken)).read<String>('id'),
         at: now,
       );
     });
@@ -253,9 +261,10 @@ final class AuthenticationService {
           now < reservation.at ||
           now - reservation.at >= attemptWindow.inMilliseconds) {
         await _event(
-          existingToken == null ? 'login_failed' : 'reauth_failed',
+          'login_failed',
           now,
           staffId: current?.read<String>('id'),
+          sessionId: reservation.sessionId,
         );
         return null;
       }
@@ -266,7 +275,7 @@ final class AuthenticationService {
         await _release('device', terminalId, reservation.deviceWindow);
         await _release('account', staffId, reservation.accountWindow!);
         await _event(
-          'reauth_succeeded',
+          'login_succeeded',
           now,
           staffId: staffId,
           sessionId: session.read<String>('id'),

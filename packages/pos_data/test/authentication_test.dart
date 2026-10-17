@@ -82,10 +82,11 @@ void main() {
     await auth.reauthenticateManager(session.token, '724915');
     expect(await count('auth_sessions'), 1);
     final event = await db.customSelect(
-      "SELECT * FROM security_events WHERE kind = 'reauth_succeeded'",
-    ).getSingle();
-    expect(event.read<String>('staff_id'), receipt.managerId);
-    expect(event.read<String>('session_id'), session.id);
+      "SELECT * FROM security_events WHERE kind = 'login_succeeded'",
+    ).get();
+    expect(event.length, 2);
+    expect(event.last.read<String>('staff_id'), receipt.managerId);
+    expect(event.last.read<String>('session_id'), session.id);
     clock.time = clock.time.add(const Duration(minutes: 1));
     await expectLater(auth.inspectSession(session.token), throwsA(isA<AuthenticationRejected>()));
   });
@@ -97,7 +98,7 @@ void main() {
     final manager = await auth.signIn(staffId: receipt.managerId, pin: '724915');
     await auth.lockSession(manager.token);
     await expectLater(auth.reauthenticateManager(manager.token, '724915'), throwsA(isA<AuthenticationRejected>()));
-    expect(await db.customSelect("SELECT * FROM security_events WHERE kind = 'reauth_attempt_reserved'").get(), isEmpty);
+    expect(await db.customSelect("SELECT * FROM security_events WHERE kind = 'login_attempt_reserved' AND session_id IS NOT NULL").get(), isEmpty);
   });
 
   test('reauthentication failures share login budget across reopen', () async {
@@ -112,18 +113,18 @@ void main() {
     await expectLater(auth.reauthenticateManager(session.token, '724915'), throwsA(isA<AuthenticationThrottled>()));
     await expectLater(auth.signIn(staffId: receipt.managerId, pin: '724915'), throwsA(isA<AuthenticationThrottled>()));
     expect(await count('auth_sessions'), 1);
-    expect((await db.customSelect("SELECT * FROM security_events WHERE kind = 'reauth_failed'").get()).length, 5);
+    expect((await db.customSelect("SELECT * FROM security_events WHERE kind = 'login_failed'").get()).length, 5);
   });
 
   test('reauthentication audit failure preserves committed attempt reservation', () async {
     final receipt = await setup();
     final session = await auth.signIn(staffId: receipt.managerId, pin: '724915');
-    await db.customStatement("CREATE TRIGGER reject_reauth BEFORE INSERT ON security_events WHEN NEW.kind = 'reauth_succeeded' BEGIN SELECT RAISE(ABORT, 'fixture'); END");
+    await db.customStatement("CREATE TRIGGER reject_reauth BEFORE INSERT ON security_events WHEN NEW.kind = 'login_succeeded' BEGIN SELECT RAISE(ABORT, 'fixture'); END");
     await expectLater(auth.reauthenticateManager(session.token, '724915'), throwsA(anything));
     final budget = await db.customSelect("SELECT reserved_count FROM auth_attempt_limits WHERE scope = 'account'").getSingle();
     expect(budget.read<int>('reserved_count'), 1);
     expect(await count('auth_sessions'), 1);
-    expect(await db.customSelect("SELECT * FROM security_events WHERE kind = 'reauth_succeeded'").get(), isEmpty);
+    expect((await db.customSelect("SELECT * FROM security_events WHERE kind = 'login_succeeded'").get()).length, 1);
   });
 
   test(
