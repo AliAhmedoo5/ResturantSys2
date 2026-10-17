@@ -116,6 +116,25 @@ void main() {
     expect((await db.customSelect("SELECT * FROM security_events WHERE kind = 'login_failed'").get()).length, 5);
   });
 
+  test('successful reauthentication releases only its own attempt', () async {
+    final receipt = await setup();
+    final session = await auth.signIn(staffId: receipt.managerId, pin: '724915');
+    await expectLater(auth.reauthenticateManager(session.token, 'bad-pin'), throwsA(isA<AuthenticationRejected>()));
+    await auth.reauthenticateManager(session.token, '724915');
+    final budgets = await db.customSelect('SELECT reserved_count FROM auth_attempt_limits').get();
+    expect(budgets.length, 2);
+    for (final budget in budgets) {
+      expect(budget.read<int>('reserved_count'), 1);
+    }
+  });
+
+  test('reauthentication cannot reserve attempts inside caller transaction', () async {
+    final receipt = await setup();
+    final session = await auth.signIn(staffId: receipt.managerId, pin: '724915');
+    await expectLater(db.transaction(() => auth.reauthenticateManager(session.token, '724915')), throwsStateError);
+    expect(await db.customSelect("SELECT * FROM security_events WHERE kind = 'login_attempt_reserved' AND session_id IS NOT NULL").get(), isEmpty);
+  });
+
   test('reauthentication audit failure preserves committed attempt reservation', () async {
     final receipt = await setup();
     final session = await auth.signIn(staffId: receipt.managerId, pin: '724915');

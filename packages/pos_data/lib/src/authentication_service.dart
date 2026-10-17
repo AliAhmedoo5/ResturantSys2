@@ -187,8 +187,10 @@ final class AuthenticationService {
     _identifier(staffId);
     final reservation = await database.transaction(() async {
       await _requireInstallation();
+      String? existingSessionId;
       if (existingToken != null) {
         final session = await _currentSession(existingToken);
+        existingSessionId = session.read<String>('id');
         AccessPolicy.require(
           StaffRole.values.byName(session.read<String>('role')),
           Capability.manageCredentials,
@@ -211,17 +213,13 @@ final class AuthenticationService {
         'login_attempt_reserved',
         now,
         staffId: staff?.read<String>('id'),
-        sessionId: existingToken == null
-            ? null
-            : (await _currentSession(existingToken)).read<String>('id'),
+        sessionId: existingSessionId,
       );
       return (
         staff: staff,
         deviceWindow: deviceWindow,
         accountWindow: accountWindow,
-        sessionId: existingToken == null
-            ? null
-            : (await _currentSession(existingToken)).read<String>('id'),
+        sessionId: existingSessionId,
         at: now,
       );
     });
