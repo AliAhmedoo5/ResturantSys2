@@ -108,10 +108,15 @@ final class WindowsAccessRepository implements AccessRepository {
         followLinks: false,
       );
       if (backupType == FileSystemEntityType.notFound) await _backups.create();
+      // Resolve the verified parent first: Windows temp/known-folder paths may
+      // contain legitimate 8.3 aliases. Resolve only the child on the other side
+      // so a redirected backup child still fails the comparison.
+      final canonicalParent = Directory(await _storage!.directory.resolveSymbolicLinks());
+      final expectedBackup = Directory.fromUri(canonicalParent.uri.resolve('backups/'));
       if (await FileSystemEntity.type(_backups.path, followLinks: false) !=
               FileSystemEntityType.directory ||
           _normalizedPath(await _backups.resolveSymbolicLinks()) !=
-              _normalizedPath(_backups.absolute.path)) {
+              _normalizedPath(expectedBackup.path)) {
         throw const AccessStorageFailure();
       }
       _database = await PosDatabase.open(
@@ -286,7 +291,10 @@ final class WindowsAccessRepository implements AccessRepository {
     _storage!.verify();
   }
 
-  String _normalizedPath(String path) => path.replaceAll('/', r'\').replaceAll(RegExp(r'[\\]+$'), '').toLowerCase();
+  String _normalizedPath(String path) => path
+      .replaceAll('/', r'\')
+      .replaceAll(RegExp(r'[\\]+$'), '')
+      .toLowerCase();
 
   void _bindAuthentication() {
     _auth = AuthenticationService(

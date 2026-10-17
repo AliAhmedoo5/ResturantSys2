@@ -12,69 +12,109 @@ final class FixtureRepository implements AccessRepository {
   int setupCount = 0, activityCount = 0;
   Completer<void>? loginGate;
   StaffIdentity? signedIn;
-  static const profiles = [StaffIdentity('manager', 'Manager Fixture', StaffRole.manager), StaffIdentity('cashier', 'Cashier Fixture', StaffRole.cashier)];
-  AccessOverview get overview => AccessOverview(configured: configured, pendingKey: false, storagePath: r'C:\Fixture\CrunchCartel', backupPath: r'C:\Fixture\CrunchCartel\backups', profiles: configured ? profiles : []);
+  static const profiles = [
+    StaffIdentity('manager', 'Manager Fixture', StaffRole.manager),
+    StaffIdentity('cashier', 'Cashier Fixture', StaffRole.cashier),
+  ];
+  AccessOverview get overview => AccessOverview(
+    configured: configured,
+    pendingKey: false,
+    storagePath: r'C:\Fixture\CrunchCartel',
+    backupPath: r'C:\Fixture\CrunchCartel\backups',
+    profiles: configured ? profiles : [],
+  );
   @override
   Future<AccessOverview> open() async => overview;
   @override
-  Future<RecoveryInformation> prepareRecovery() async => const RecoveryInformation(code: 'TEST-ONLY-CODE', envelope: 'TEST-ONLY-ENVELOPE');
+  Future<RecoveryInformation> prepareRecovery() async =>
+      const RecoveryInformation(
+        code: 'TEST-ONLY-CODE',
+        envelope: 'TEST-ONLY-ENVELOPE',
+      );
   @override
-  Future<AccessOverview> finishSetup({required String managerName, required String managerPin, required String managerConfirmation, required String cashierName, required String cashierPin, required String cashierConfirmation, required bool recoveryAcknowledged}) async {
+  Future<AccessOverview> finishSetup({
+    required String managerName,
+    required String managerPin,
+    required String managerConfirmation,
+    required String cashierName,
+    required String cashierPin,
+    required String cashierConfirmation,
+    required bool recoveryAcknowledged,
+  }) async {
     if (!recoveryAcknowledged || cashierPin.length != 4) throw ArgumentError();
     configured = true;
     setupCount++;
     return overview;
   }
+
   @override
-  Future<WorkspaceAccess> signIn({required String staffId, required String pin}) async {
+  Future<WorkspaceAccess> signIn({
+    required String staffId,
+    required String pin,
+  }) async {
     await loginGate?.future;
     signedIn = profiles.singleWhere((staff) => staff.id == staffId);
     locked = false;
     return workspace();
   }
+
   @override
   Future<WorkspaceAccess> workspace({bool recordActivity = false}) async {
     if (expired || locked) throw const AuthenticationRejected();
     if (recordActivity) activityCount++;
     return WorkspaceAccess(signedIn!, hasEnabledCashier: true);
   }
+
   @override
-  Future<void> lock() async { locked = true; }
+  Future<void> lock() async {
+    locked = true;
+  }
+
   @override
-  Future<void> close() async { closed = true; }
+  Future<void> close() async {
+    closed = true;
+  }
 }
 
 void main() {
-  test('background validation never records activity and expiry removes workspace', () async {
-    final repository = FixtureRepository()..configured = true;
-    final controller = AccessController(repository);
-    await controller.start();
-    await controller.signIn('manager', '1234');
-    await controller.inspect();
-    expect(repository.activityCount, 0);
-    await controller.inspect(activity: true);
-    expect(repository.activityCount, 1);
-    repository.expired = true;
-    await controller.inspect();
-    expect(controller.stage, AccessStage.login);
-    expect(controller.workspace, isNull);
-    expect(repository.locked, true);
-    controller.dispose();
-  });
+  test(
+    'background validation never records activity and expiry removes workspace',
+    () async {
+      final repository = FixtureRepository()..configured = true;
+      final controller = AccessController(repository);
+      await controller.start();
+      await controller.signIn('manager', '1234');
+      await controller.inspect();
+      expect(repository.activityCount, 0);
+      await controller.inspect(activity: true);
+      expect(repository.activityCount, 1);
+      repository.expired = true;
+      await controller.inspect();
+      expect(controller.stage, AccessStage.login);
+      expect(controller.workspace, isNull);
+      expect(repository.locked, true);
+      controller.dispose();
+    },
+  );
 
-  test('focus loss during login revokes the late token before showing workspace', () async {
-    final repository = FixtureRepository()..configured = true..loginGate = Completer<void>();
-    final controller = AccessController(repository);
-    await controller.start();
-    final signingIn = controller.signIn('manager', '1234');
-    controller.lock();
-    repository.loginGate!.complete();
-    await signingIn;
-    expect(controller.workspace, isNull);
-    expect(controller.stage, AccessStage.login);
-    expect(repository.locked, true);
-    controller.dispose();
-  });
+  test(
+    'focus loss during login revokes the late token before showing workspace',
+    () async {
+      final repository = FixtureRepository()
+        ..configured = true
+        ..loginGate = Completer<void>();
+      final controller = AccessController(repository);
+      await controller.start();
+      final signingIn = controller.signIn('manager', '1234');
+      controller.lock();
+      repository.loginGate!.complete();
+      await signingIn;
+      expect(controller.workspace, isNull);
+      expect(controller.stage, AccessStage.login);
+      expect(repository.locked, true);
+      controller.dispose();
+    },
+  );
 
   for (final dpi in [1.0, 1.25, 1.5]) {
     testWidgets('setup and separate role access at $dpi DPI', (tester) async {
@@ -83,10 +123,18 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final repository = FixtureRepository();
-      await tester.pumpWidget(ProviderScope(overrides: [accessRepositoryProvider.overrideWithValue(repository)], child: const CrunchCartelApp()));
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [accessRepositoryProvider.overrideWithValue(repository)],
+          child: const CrunchCartelApp(),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.text('Make this your restaurant.'), findsOneWidget);
-      var next = find.widgetWithText(FilledButton, 'Continue to staff profiles');
+      var next = find.widgetWithText(
+        FilledButton,
+        'Continue to staff profiles',
+      );
       expect(tester.widget<FilledButton>(next).onPressed, isNull);
       await tester.ensureVisible(find.text('Prepare recovery kit'));
       await tester.tap(find.text('Prepare recovery kit'));
@@ -98,12 +146,19 @@ void main() {
       await tester.ensureVisible(next);
       await tester.tap(next);
       await tester.pumpAndSettle();
-      expect(find.text('Create your primary Cashier counter profile and 4-digit PIN.'), findsOneWidget);
+      expect(
+        find.text(
+          'Create your primary Cashier counter profile and 4-digit PIN.',
+        ),
+        findsOneWidget,
+      );
       Future<void> fill(String label, String text) async {
         final field = find.widgetWithText(TextField, label);
         await tester.ensureVisible(field);
         await tester.enterText(field, text);
+        await tester.pumpAndSettle();
       }
+
       await fill('Manager name', 'Manager Fixture');
       await fill('Manager PIN (4–8 digits)', '724915');
       await fill('Confirm Manager PIN', '724915');
@@ -112,6 +167,7 @@ void main() {
       await fill('Confirm Cashier PIN', '0638');
       final create = find.text('Create profiles and continue to sign-in');
       await tester.ensureVisible(create);
+      await tester.pumpAndSettle();
       await tester.tap(create);
       await tester.pumpAndSettle();
       expect(repository.setupCount, 1);
